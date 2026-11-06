@@ -1,0 +1,11 @@
+.env
+.venv/
+__pycache__/
+*.pyc
+
+# Legado com credenciais OAuth hardcoded. Não versionar.
+scripts/auth_blogger.py
+scripts/get_token.sh
+scripts/post_blog.sh
+scripts/post_news_api.py
+scripts/post_news_full.py

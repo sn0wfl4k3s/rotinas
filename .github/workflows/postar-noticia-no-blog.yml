@@ -1,0 +1,64 @@
+name: postar-noticia-no-blog
+
+on:
+  schedule:
+    # 6x ao dia: a cada 4 horas (UTC). 00,04,08,12,16,20 UTC = 21,01,05,09,13,17 BRT
+    - cron: "0 */4 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: write
+
+concurrency:
+  group: postar-noticia-no-blog
+  cancel-in-progress: false
+
+jobs:
+  postar:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - run: pip install -r requirements.txt
+
+      # Estado de dedupe entre execucoes. restore-keys pega o cache mais recente.
+      - name: Restaurar estado
+        uses: actions/cache@v4
+        with:
+          path: state/
+          key: state-${{ github.run_id }}
+          restore-keys: |
+            state-
+
+      - name: Gerar e enviar matéria
+        env:
+          EMAIL_USER: ${{ secrets.EMAIL_USER }}
+          APP_PASSWORD: ${{ secrets.APP_PASSWORD }}
+          LLM_API_KEY: ${{ secrets.LLM_API_KEY }}
+          LLM_BASE_URL: ${{ vars.LLM_BASE_URL }}
+          LLM_MODEL: ${{ vars.LLM_MODEL }}
+          BLOG_EMAIL: ${{ secrets.BLOG_EMAIL }}
+        run: python3 scripts/post_news.py --email "$BLOG_EMAIL"
+
+      # Uma issue aberta por problema, nao seis por dia: falha nova vira comentario.
+      - name: Avisar falha
+        if: failure()
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          TITULO="Falha na rotina postar-noticia-no-blog"
+          EXISTENTE=$(gh issue list --repo "${{ github.repository }}" --state open \
+            --search "\"$TITULO\" in:title" --json number --jq '.[0].number // empty')
+          if [ -n "$EXISTENTE" ]; then
+            gh issue comment "$EXISTENTE" --repo "${{ github.repository }}" --body "Nova falha: $RUN_URL"
+          else
+            gh issue create --repo "${{ github.repository }}" --title "$TITULO" \
+              --body "A rotina falhou. Log: $RUN_URL"
+          fi
