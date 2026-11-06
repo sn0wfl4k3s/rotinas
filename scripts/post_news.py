@@ -27,6 +27,21 @@ def _normalizar(titulo):
     return " ".join(sem_acento.lower().split())
 
 
+_TAGS_NO_FIM = re.compile(r"\[\s*([^\]]*)\]\s*$")
+
+
+def normalizar_tags(titulo):
+    """Tags do título no formato do blog: [tag1,tag2], minúsculo e sem espaço."""
+    m = _TAGS_NO_FIM.search(titulo or "")
+    if not m:
+        return titulo
+    tags = [re.sub(r"\s+", "", t).lower() for t in m.group(1).split(",")]
+    tags = [t for t in tags if t]
+    if not tags:
+        return titulo
+    return titulo[:m.start()] + "[" + ",".join(tags) + "]"
+
+
 def _quando_de(post):
     try:
         quando = datetime.fromisoformat(post["quando"])
@@ -168,7 +183,7 @@ Baseie-se apenas nestes trechos da fonte original:
 Regras:
 1. Tom formal, impessoal e jornalístico. Sem gíria, sem "gente", sem primeira pessoa.
 2. Texto longo e detalhado: de 5 a 8 parágrafos, no mínimo 450 palavras. Contextualize o assunto, explique o que aconteceu, quem está envolvido e o que se sabe até o momento. Não invente fatos ausentes da fonte; quando faltar informação, escreva de forma mais geral.
-3. Título informativo e chamativo, sem sensacionalismo, com tags ao final no formato "[tag1, tag2]".
+3. Título informativo e chamativo, sem sensacionalismo, com 2 a 3 tags ao final no formato "[tag1,tag2]": minúsculas, sem nenhum espaço, separadas por vírgula.
 4. Corpo em HTML usando apenas <p>, <h2> e <strong>. NÃO inclua imagem; ela é adicionada depois.
 5. Responda APENAS com um objeto JSON: {{"titulo": "...", "html": "..."}}
 """
@@ -211,7 +226,7 @@ Regras:
         texto = bruto.replace("```json", "").replace("```", "").strip()
         try:
             dados = json.loads(texto)
-            return dados["titulo"], dados["html"]
+            return normalizar_tags(dados["titulo"]), dados["html"]
         except (ValueError, KeyError, TypeError):
             logging.warning("Resposta da IA fora do formato JSON; usando fallback.")
             return trend_data["title"], f"<p>{texto}</p>"
