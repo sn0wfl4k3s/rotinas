@@ -50,13 +50,22 @@ class DedupeTest(unittest.TestCase):
             with mock.patch.object(self.module, "STATE_PATH", str(caminho)):
                 self.assertEqual(self.module.carregar_estado(), [antigo])
 
+    def test_mesma_url_mesmo_com_titulo_diferente_e_duplicado(self):
+        posts = [{"titulo": "Vitória x Fluminense", "urls": ["https://a.example/jogo"], "quando": post("x")["quando"]}]
+        trend = {"title": "ec vitória x fluminense", "news_urls": ["https://a.example/jogo"]}
+        self.assertTrue(self.module.ja_publicado(trend, posts))
+
     def test_registrar_post_grava_lista_e_poda_antigos(self):
         with tempfile.TemporaryDirectory() as tmp:
             caminho = Path(tmp) / "state" / "last_post.json"
             with mock.patch.object(self.module, "STATE_PATH", str(caminho)):
-                self.module.registrar_post([post("velha", horas_atras=20)], "nova")
+                self.module.registrar_post(
+                    [post("velha", horas_atras=20)],
+                    {"title": "nova", "news_urls": ["https://a.example/nova"]},
+                )
                 gravado = json.loads(caminho.read_text())["posts"]
         self.assertEqual([p["titulo"] for p in gravado], ["nova"])
+        self.assertEqual(gravado[0]["urls"], ["https://a.example/nova"])
 
 
 class MontarHtmlTest(unittest.TestCase):

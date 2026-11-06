@@ -55,25 +55,38 @@ def salvar_estado(posts):
         json.dump({"posts": posts}, f, ensure_ascii=False, indent=2)
 
 
+def _urls_de(trend):
+    return list(dict.fromkeys(
+        u for u in [trend.get("news_url"), *trend.get("news_urls", [])] if u
+    ))
+
+
 def ja_publicado(trend, posts):
-    """Evita repetir qualquer trend publicada nas últimas JANELA_DEDUPE_HORAS horas."""
+    """Evita repetir trend das últimas JANELA_DEDUPE_HORAS horas, por título ou por fonte."""
     limite = datetime.now(timezone.utc) - timedelta(hours=JANELA_DEDUPE_HORAS)
     alvo = _normalizar(trend["title"])
+    urls = set(_urls_de(trend))
     for post in posts:
-        if _normalizar(post.get("titulo")) != alvo:
-            continue
         quando = _quando_de(post)
-        if quando and quando > limite:
+        if not quando or quando <= limite:
+            continue
+        mesma_trend = _normalizar(post.get("titulo")) == alvo
+        mesma_fonte = bool(urls & set(post.get("urls") or []))
+        if mesma_trend or mesma_fonte:
             return True
     return False
 
 
-def registrar_post(posts, titulo):
+def registrar_post(posts, trend):
     """Grava o post e poda o que saiu da janela. Falha de escrita não derruba o envio já feito."""
     agora = datetime.now(timezone.utc)
     limite = agora - timedelta(hours=JANELA_DEDUPE_HORAS)
     recentes = [p for p in posts if (_quando_de(p) or limite) > limite]
-    recentes.append({"titulo": titulo, "quando": agora.isoformat()})
+    recentes.append({
+        "titulo": trend["title"],
+        "urls": _urls_de(trend),
+        "quando": agora.isoformat(),
+    })
     try:
         salvar_estado(recentes)
     except OSError as e:
@@ -255,7 +268,7 @@ def main(argv=None):
             f"Fonte com pouco conteúdo ({len(source_content)} chars); matéria não publicada "
             f"para evitar texto genérico. Trend registrada para não repetir."
         )
-        registrar_post(estado, trend["title"])
+        registrar_post(estado, trend)
         return
 
     titulo, corpo = generator.generate(trend, source_content)
@@ -281,7 +294,7 @@ def main(argv=None):
         logging.error(f"Unexpected error: {e}")
         sys.exit(1)
 
-    registrar_post(estado, trend["title"])
+    registrar_post(estado, trend)
 
 
 if __name__ == "__main__":
