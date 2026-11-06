@@ -2,8 +2,8 @@ name: postar-noticia-no-blog
 
 on:
   schedule:
-    # 6x ao dia: a cada 4 horas (UTC). 00,04,08,12,16,20 UTC = 21,01,05,09,13,17 BRT
-    - cron: "0 */4 * * *"
+    # 24x ao dia: de hora em hora (UTC). BRT = UTC-3.
+    - cron: "0 * * * *"
   workflow_dispatch:
 
 permissions:
