@@ -21,11 +21,12 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - uses: actions/setup-node@v4
+      - uses: oven-sh/setup-bun@v2
         with:
-          node-version: "22"
+          bun-version: "1.3.14"
 
-      - run: npm ci --prefix postar-no-blog
+      - run: bun install --frozen-lockfile
+        working-directory: postar-no-blog
 
       # Estado de dedupe entre execucoes. restore-keys pega o cache mais recente.
       - name: Restaurar estado
@@ -44,7 +45,7 @@ jobs:
           LLM_BASE_URL: ${{ vars.LLM_BASE_URL }}
           LLM_MODEL: ${{ vars.LLM_MODEL }}
           BLOG_EMAIL: ${{ secrets.BLOG_EMAIL }}
-        run: node postar-no-blog/scripts/post_news.js --email "$BLOG_EMAIL"
+        run: bun postar-no-blog/scripts/post_news.js --email "$BLOG_EMAIL"
 
       # Uma issue aberta por problema, nao seis por dia: falha nova vira comentario.
       - name: Avisar falha

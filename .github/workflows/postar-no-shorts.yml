@@ -33,11 +33,12 @@ jobs:
           ref: 8b0206be2c7977e3bc3cf25ff99a2adc3c9c65f9
           path: MoneyPrinterTurbo
 
-      - uses: actions/setup-node@v4
+      - uses: oven-sh/setup-bun@v2
         with:
-          node-version: "22"
+          bun-version: "1.3.14"
 
-      - run: npm ci --prefix postar-no-shorts
+      - run: bun install --frozen-lockfile
+        working-directory: postar-no-shorts
 
       - name: Credenciais do YouTube
         env:
@@ -58,7 +59,7 @@ jobs:
             youtube-state-
 
       - name: Configurar MoneyPrinterTurbo
-        run: node postar-no-shorts/scripts/mpt_config.js
+        run: bun postar-no-shorts/scripts/mpt_config.js
 
       - name: Subir MoneyPrinterTurbo
         working-directory: MoneyPrinterTurbo
@@ -75,25 +76,25 @@ jobs:
 
       - name: Escolher tema
         run: |
-          node postar-no-shorts/scripts/escolher_tema.js > tema.txt
+          bun postar-no-shorts/scripts/escolher_tema.js > tema.txt
           echo "TEMA=$(cat tema.txt)" >> "$GITHUB_ENV"
           cat tema.txt
 
       - name: Gerar Short
         run: |
-          node postar-no-shorts/scripts/mpt_generate.js \
+          bun postar-no-shorts/scripts/mpt_generate.js \
             --subject "$TEMA" --voice pt-BR-AntonioNeural --clip-duration 3 \
             --mpt-home "$MPT_HOME" > gen.json
-          echo "MP4=$(node -p 'JSON.parse(require("fs").readFileSync("gen.json","utf-8")).files[0]')" >> "$GITHUB_ENV"
+          echo "MP4=$(bun -p 'JSON.parse(require("fs").readFileSync("gen.json","utf-8")).files[0]')" >> "$GITHUB_ENV"
 
       - name: Gerar metadados
-        run: node postar-no-shorts/scripts/gen_metadata.js --subject "$TEMA" > meta.json
+        run: bun postar-no-shorts/scripts/gen_metadata.js --subject "$TEMA" > meta.json
 
       - name: Publicar no YouTube
-        run: node postar-no-shorts/scripts/yt_upload.js --file "$MP4" --meta-json meta.json --privacy public > up.json && cat up.json
+        run: bun postar-no-shorts/scripts/yt_upload.js --file "$MP4" --meta-json meta.json --privacy public > up.json && cat up.json
 
       - name: Registrar tema publicado
-        run: node postar-no-shorts/scripts/escolher_tema.js --registrar "$TEMA"
+        run: bun postar-no-shorts/scripts/escolher_tema.js --registrar "$TEMA"
 
       - name: Diagnóstico do MoneyPrinterTurbo
         if: failure()

@@ -4,7 +4,7 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "test": "node --test test/rotinas.test.js"
+    "test": "bun test test/rotinas.test.js"
   },
   "dependencies": {
     "fast-xml-parser": "^5.12.0",

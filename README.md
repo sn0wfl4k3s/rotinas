@@ -16,8 +16,8 @@ Rodar localmente:
 ```bash
 cp .env.example .env
 set -a && source .env && set +a
-npm ci --prefix postar-no-blog
-node postar-no-blog/scripts/post_news.js --email "$BLOG_EMAIL"
+bun install --cwd postar-no-blog
+bun postar-no-blog/scripts/post_news.js --email "$BLOG_EMAIL"
 ```
 
 O estado de dedupe (`state/`) fica em `actions/cache`.

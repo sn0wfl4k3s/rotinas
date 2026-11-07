@@ -9,6 +9,6 @@
     "googleapis": "^144.0.0"
   },
   "scripts": {
-    "test": "node --test test/rotina.test.js"
+    "test": "bun test test/rotina.test.js"
   }
 }
