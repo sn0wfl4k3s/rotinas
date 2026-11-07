@@ -1,5 +1,5 @@
 {
-  "name": "youtube-shorts-pipeline",
+  "name": "postar-no-shorts",
   "version": "1.0.0",
   "description": "Pipeline: assunto -> MoneyPrinterTurbo -> YouTube Short",
   "type": "module",

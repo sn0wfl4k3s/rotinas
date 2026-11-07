@@ -1,4 +1,4 @@
-name: postar-noticia-no-blog
+name: postar-no-blog
 
 on:
   schedule:
@@ -11,7 +11,7 @@ permissions:
   issues: write
 
 concurrency:
-  group: postar-noticia-no-blog
+  group: postar-no-blog
   cancel-in-progress: false
 
 jobs:
@@ -25,7 +25,7 @@ jobs:
         with:
           node-version: "22"
 
-      - run: npm ci --prefix blogger-poster
+      - run: npm ci --prefix postar-no-blog
 
       # Estado de dedupe entre execucoes. restore-keys pega o cache mais recente.
       - name: Restaurar estado
@@ -44,7 +44,7 @@ jobs:
           LLM_BASE_URL: ${{ vars.LLM_BASE_URL }}
           LLM_MODEL: ${{ vars.LLM_MODEL }}
           BLOG_EMAIL: ${{ secrets.BLOG_EMAIL }}
-        run: node blogger-poster/scripts/post_news.js --email "$BLOG_EMAIL"
+        run: node postar-no-blog/scripts/post_news.js --email "$BLOG_EMAIL"
 
       # Uma issue aberta por problema, nao seis por dia: falha nova vira comentario.
       - name: Avisar falha
@@ -53,7 +53,7 @@ jobs:
           GH_TOKEN: ${{ github.token }}
           RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
         run: |
-          TITULO="Falha na rotina postar-noticia-no-blog"
+          TITULO="Falha na rotina postar-no-blog"
           EXISTENTE=$(gh issue list --repo "${{ github.repository }}" --state open \
             --search "\"$TITULO\" in:title" --json number --jq '.[0].number // empty')
           if [ -n "$EXISTENTE" ]; then

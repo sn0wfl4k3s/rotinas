@@ -1,4 +1,4 @@
-name: youtube-shorts
+name: postar-no-shorts
 
 on:
   schedule:
@@ -11,7 +11,7 @@ permissions:
   issues: write
 
 concurrency:
-  group: youtube-shorts
+  group: postar-no-shorts
   cancel-in-progress: false
 
 jobs:
@@ -37,28 +37,28 @@ jobs:
         with:
           node-version: "22"
 
-      - run: npm ci --prefix youtube-shorts
+      - run: npm ci --prefix postar-no-shorts
 
       - name: Credenciais do YouTube
         env:
           YOUTUBE_CLIENT_SECRET: ${{ secrets.YOUTUBE_CLIENT_SECRET }}
           YOUTUBE_TOKEN: ${{ secrets.YOUTUBE_TOKEN }}
         run: |
-          mkdir -p youtube-shorts/credentials
-          printf '%s' "$YOUTUBE_CLIENT_SECRET" > youtube-shorts/credentials/client_secret.json
-          printf '%s' "$YOUTUBE_TOKEN" > youtube-shorts/credentials/token.json
+          mkdir -p postar-no-shorts/credentials
+          printf '%s' "$YOUTUBE_CLIENT_SECRET" > postar-no-shorts/credentials/client_secret.json
+          printf '%s' "$YOUTUBE_TOKEN" > postar-no-shorts/credentials/token.json
 
       # Histórico de temas entre execuções. restore-keys pega o cache mais recente.
       - name: Restaurar histórico de temas
         uses: actions/cache@v4
         with:
-          path: youtube-shorts/state/
+          path: postar-no-shorts/state/
           key: youtube-state-${{ github.run_id }}
           restore-keys: |
             youtube-state-
 
       - name: Configurar MoneyPrinterTurbo
-        run: node youtube-shorts/scripts/mpt_config.js
+        run: node postar-no-shorts/scripts/mpt_config.js
 
       - name: Subir MoneyPrinterTurbo
         working-directory: MoneyPrinterTurbo
@@ -75,25 +75,25 @@ jobs:
 
       - name: Escolher tema
         run: |
-          node youtube-shorts/scripts/escolher_tema.js > tema.txt
+          node postar-no-shorts/scripts/escolher_tema.js > tema.txt
           echo "TEMA=$(cat tema.txt)" >> "$GITHUB_ENV"
           cat tema.txt
 
       - name: Gerar Short
         run: |
-          node youtube-shorts/scripts/mpt_generate.js \
+          node postar-no-shorts/scripts/mpt_generate.js \
             --subject "$TEMA" --voice pt-BR-AntonioNeural --clip-duration 3 \
             --mpt-home "$MPT_HOME" > gen.json
           echo "MP4=$(node -p 'JSON.parse(require("fs").readFileSync("gen.json","utf-8")).files[0]')" >> "$GITHUB_ENV"
 
       - name: Gerar metadados
-        run: node youtube-shorts/scripts/gen_metadata.js --subject "$TEMA" > meta.json
+        run: node postar-no-shorts/scripts/gen_metadata.js --subject "$TEMA" > meta.json
 
       - name: Publicar no YouTube
-        run: node youtube-shorts/scripts/yt_upload.js --file "$MP4" --meta-json meta.json --privacy public > up.json && cat up.json
+        run: node postar-no-shorts/scripts/yt_upload.js --file "$MP4" --meta-json meta.json --privacy public > up.json && cat up.json
 
       - name: Registrar tema publicado
-        run: node youtube-shorts/scripts/escolher_tema.js --registrar "$TEMA"
+        run: node postar-no-shorts/scripts/escolher_tema.js --registrar "$TEMA"
 
       - name: Diagnóstico do MoneyPrinterTurbo
         if: failure()
@@ -115,7 +115,7 @@ jobs:
           GH_TOKEN: ${{ github.token }}
           RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
         run: |
-          TITULO="Falha na rotina youtube-shorts"
+          TITULO="Falha na rotina postar-no-shorts"
           EXISTENTE=$(gh issue list --repo "${{ github.repository }}" --state open \
             --search "\"$TITULO\" in:title" --json number --jq '.[0].number // empty')
           if [ -n "$EXISTENTE" ]; then

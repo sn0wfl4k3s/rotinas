@@ -9,8 +9,8 @@ scripts/get_token.sh
 scripts/post_blog.sh
 scripts/post_news_api.py
 scripts/post_news_full.py
-youtube-shorts/credentials/
-youtube-shorts/node_modules/
-youtube-shorts/state/
-blogger-poster/node_modules/
+postar-no-shorts/credentials/
+postar-no-shorts/node_modules/
+postar-no-shorts/state/
+postar-no-blog/node_modules/
 state/
