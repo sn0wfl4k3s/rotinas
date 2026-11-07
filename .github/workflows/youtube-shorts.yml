@@ -30,7 +30,7 @@ jobs:
       - uses: actions/checkout@v4
         with:
           repository: harry0703/MoneyPrinterTurbo
-          ref: cca6453a876555d3448ac50f6804228bf55732ce
+          ref: 8b0206be2c7977e3bc3cf25ff99a2adc3c9c65f9
           path: MoneyPrinterTurbo
 
       - uses: actions/setup-node@v4
