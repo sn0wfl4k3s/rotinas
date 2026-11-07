@@ -12,3 +12,5 @@ scripts/post_news_full.py
 youtube-shorts/credentials/
 youtube-shorts/node_modules/
 youtube-shorts/state/
+blogger-poster/node_modules/
+state/

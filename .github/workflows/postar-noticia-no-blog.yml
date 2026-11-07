@@ -21,11 +21,11 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-node@v4
         with:
-          python-version: "3.12"
+          node-version: "22"
 
-      - run: pip install -r requirements.txt
+      - run: npm ci --prefix blogger-poster
 
       # Estado de dedupe entre execucoes. restore-keys pega o cache mais recente.
       - name: Restaurar estado
@@ -44,7 +44,7 @@ jobs:
           LLM_BASE_URL: ${{ vars.LLM_BASE_URL }}
           LLM_MODEL: ${{ vars.LLM_MODEL }}
           BLOG_EMAIL: ${{ secrets.BLOG_EMAIL }}
-        run: python3 scripts/post_news.py --email "$BLOG_EMAIL"
+        run: node blogger-poster/scripts/post_news.js --email "$BLOG_EMAIL"
 
       # Uma issue aberta por problema, nao seis por dia: falha nova vira comentario.
       - name: Avisar falha
