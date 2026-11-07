@@ -67,6 +67,7 @@ const payload = {
   subtitle_enabled: !a["no-subtitle"],
   rounded_subtitle_background: !a["square-subtitle"],
   subtitle_background_enabled: true,
+  text_background_color: "#000000",
 };
 if (a.script) payload.video_script = a.script;
 if (a.terms) payload.video_terms = a.terms;
