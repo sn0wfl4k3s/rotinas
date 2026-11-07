@@ -183,7 +183,7 @@ Baseie-se apenas nestes trechos da fonte original:
 Regras:
 1. Tom formal, impessoal e jornalístico. Sem gíria, sem "gente", sem primeira pessoa.
 2. Texto longo e detalhado: de 5 a 8 parágrafos, no mínimo 450 palavras. Contextualize o assunto, explique o que aconteceu, quem está envolvido e o que se sabe até o momento. Não invente fatos ausentes da fonte; quando faltar informação, escreva de forma mais geral.
-3. Título informativo e chamativo, sem sensacionalismo, com 2 a 3 tags ao final no formato "[tag1,tag2]": minúsculas, sem nenhum espaço, separadas por vírgula.
+3. Título informativo e chamativo, sem sensacionalismo. NÃO inclua tags ou colchetes no título.
 4. Corpo em HTML usando apenas <p>, <h2> e <strong>. NÃO inclua imagem; ela é adicionada depois.
 5. Responda APENAS com um objeto JSON: {{"titulo": "...", "html": "..."}}
 """
