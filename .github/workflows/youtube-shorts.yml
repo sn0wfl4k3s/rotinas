@@ -95,6 +95,11 @@ jobs:
       - name: Registrar tema publicado
         run: node youtube-shorts/scripts/escolher_tema.js --registrar "$TEMA"
 
+      - name: Diagnóstico do MoneyPrinterTurbo
+        if: failure()
+        working-directory: MoneyPrinterTurbo
+        run: docker compose logs --tail=300 api
+
       - name: Apagar vídeo local
         if: always()
         run: '[ -n "$MP4" ] && rm -f "$MP4" || true'
