@@ -66,7 +66,9 @@ export function jaPublicado(trend, posts) {
     const quando = quandoDe(post);
     if (!quando || quando.getTime() <= limite) return false;
     const mesmaTrend = normalizar(post.titulo) === alvo;
-    const mesmaFonte = (post.urls || []).some((u) => urls.has(u));
+    // state é cache restaurável: urls em formato inesperado não pode derrubar a execução
+    const urlsDoPost = Array.isArray(post.urls) ? post.urls : [];
+    const mesmaFonte = urlsDoPost.some((u) => urls.has(u));
     return mesmaTrend || mesmaFonte;
   });
 }
@@ -128,7 +130,8 @@ function escaparHtml(texto) {
     .replace(/&/g, "&amp;")
     .replace(/</g, "&lt;")
     .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;");
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
 }
 
 export function montarHtml(trend, corpo) {

@@ -11,7 +11,7 @@ remover Python do CI e do repo, sem mudar o que a rotina faz.
 ## Metas
 
 - Paridade de comportamento: Trends BR → escolha da fonte → reescrita via LLM → HTML → SMTP Gmail.
-- Os mesmos 23 testes, verdes em Node 22 (`node:test`).
+- Os 23 testes do Python portados, verdes em Node 22 (`node:test`) — 43 no fim, somando os casos de borda.
 - Workflow continua horário, mesmo cache de dedupe, mesmos secrets e variables.
 
 ## Não-metas
@@ -46,12 +46,12 @@ remover Python do CI e do repo, sem mudar o que a rotina faz.
 blogger-poster/
 ├── package.json          fast-xml-parser, nodemailer
 ├── scripts/
-│   ├── post_news.js      port de post_news.py (301 linhas)
+│   ├── post_news.js      port de post_news.py (370 linhas)
 │   └── enviar_email.js   port de enviar_email.py
-└── test/                 6 arquivos, 23 testes
+└── test/                 1 arquivo, 43 testes
 ```
 
-Removidos: `blogger-poster/scripts/*.py`, `blogger-poster/tests/`, `requirements.txt`.
+Removidos: `scripts/*.py`, `tests/`, `requirements.txt` (na raiz, antes do move para `blogger-poster/`).
 
 ## Riscos
 
@@ -62,6 +62,6 @@ Removidos: `blogger-poster/scripts/*.py`, `blogger-poster/tests/`, `requirements
 
 ## Validação
 
-1. 23 testes verdes em Node.
+1. 43 testes verdes em Node.
 2. Rodada local real, destinatário Gmail pessoal, conferir o HTML recebido.
 3. Push. Observar a primeira execução agendada no Actions.

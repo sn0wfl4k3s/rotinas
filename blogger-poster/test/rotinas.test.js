@@ -48,6 +48,22 @@ test("dedupe: data sem timezone não derruba", () => {
   assert.equal(jaPublicado({ title: "A" }, [semTz]), true);
 });
 
+test("dedupe: aceita o formato que o cache do Python gravou", () => {
+  // isoformat() do Python: microssegundos e offset +00:00
+  const dentro = new Date(Date.now() - 4 * 60_000).toISOString().replace("Z", "000+00:00");
+  const fora = new Date(Date.now() - 13 * 3600_000).toISOString().replace("Z", "000+00:00");
+  assert.equal(jaPublicado({ title: "A" }, [{ titulo: "A", urls: [], quando: dentro }]), true);
+  assert.equal(jaPublicado({ title: "A" }, [{ titulo: "A", urls: [], quando: fora }]), false);
+});
+
+test("dedupe: urls em formato inesperado não derruba a execução", () => {
+  const corrompido = { titulo: "outro", urls: "https://a.example/jogo", quando: post("x").quando };
+  assert.equal(
+    jaPublicado({ title: "A", news_urls: ["https://a.example/jogo"] }, [corrompido]),
+    false,
+  );
+});
+
 test("estado: lê o formato antigo de um post só", () => {
   const arquivo = tmpArquivo();
   fs.mkdirSync(path.dirname(arquivo), { recursive: true });
@@ -86,12 +102,13 @@ test("registrar: grava lista e poda antigos", () => {
 
 test("html: escapa aspas do título e do src", () => {
   const html = montarHtml(
-    { title: 'Tema "especial" <b>', image_url: "https://x.example/a.jpg?q=1&r=2" },
+    { title: 'Tema "especial" de D\'Ávila <b>', image_url: "https://x.example/a.jpg?q=1&r=2" },
     "<p>corpo</p>",
   );
   assert.match(html, /&quot;/);
   assert.match(html, /&amp;r=2/);
   assert.match(html, /&lt;b&gt;/);
+  assert.match(html, /&#39;/);
   assert.match(html, /<p>corpo<\/p>/);
 });
 
@@ -191,6 +208,19 @@ test("trends: falha de rede devolve null depois de 3 tentativas", async () => {
   assert.equal(chamadas, 3);
 });
 
+test("trends: XML inválido devolve null depois de 3 tentativas", async () => {
+  let chamadas = 0;
+  const fetcher = new TrendFetcher("https://rss.example", {
+    fetchImpl: async () => {
+      chamadas += 1;
+      return new Response("<rss><channel>", { status: 200 });
+    },
+    sleep: async () => {},
+  });
+  assert.equal(await fetcher.fetchTopTrend(), null);
+  assert.equal(chamadas, 3);
+});
+
 function comEnv(vars) {
   const antes = process.env;
   process.env = { ...vars };
@@ -210,11 +240,16 @@ const TREND = { title: "Tema", image_url: null };
 test("llm: 429 nas três tentativas vira erro com 429", async () => {
   const restaurar = comEnv({ LLM_API_KEY: "k" });
   try {
+    let chamadas = 0;
     const gen = new ContentGenerator({
-      fetchImpl: async () => new Response("limite", { status: 429 }),
+      fetchImpl: async () => {
+        chamadas += 1;
+        return new Response("limite", { status: 429 });
+      },
       sleep: async () => {},
     });
     await assert.rejects(() => gen.generate(TREND, "fonte"), /429/);
+    assert.equal(chamadas, 3);
   } finally {
     restaurar();
   }
@@ -495,4 +530,14 @@ test("main: aceita --email=valor, forma do argparse", async () => {
   d.sendEmail = async (...args) => enviados.push(args);
   assert.equal(await main(["--email=destino@blogger.com"], d), 0);
   assert.deepEqual(enviados.map((e) => e[0]), ["destino@blogger.com"]);
+});
+
+test("main: nenhuma trend retorna 0 e não envia", async () => {
+  const d = deps("");
+  d.fetcher = { fetchTopTrend: async () => null };
+  const enviados = [];
+  d.sendEmail = async (...args) => enviados.push(args);
+  assert.equal(await main(["--email", "destino@blogger.com"], d), 0);
+  assert.equal(enviados.length, 0);
+  assert.match(d.log.linhas.join("\n"), /Nenhuma trend/);
 });

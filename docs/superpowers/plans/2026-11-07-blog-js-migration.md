@@ -2,7 +2,7 @@
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** Reimplementar a rotina do blog em Node 22, com o mesmo comportamento e os mesmos 23 testes, e remover o Python do repo.
+**Goal:** Reimplementar a rotina do blog em Node 22, com o mesmo comportamento e os 23 testes do Python portados (43 no fim), e remover o Python do repo.
 
 **Architecture:** Port linha a linha. `blogger-poster/scripts/post_news.js` mantém a estrutura do original: funções puras de estado/dedupe, `TrendFetcher`, `ContentGenerator`, `main`. `enviar_email.js` troca `smtplib` por `nodemailer`. Dependências externas entram por injeção (`fetchImpl`, `sleep`, `sendEmail`, `stateFile`) para permitir teste sem rede e sem espera real.
 
@@ -39,7 +39,7 @@
 **Interfaces:**
 - Produces: `npm test` em `blogger-poster/`; `fast-xml-parser` e `nodemailer` instalados; `package-lock.json` versionado.
 
-- [ ] **Step 1: Criar `blogger-poster/package.json`**
+- [x] **Step 1: Criar `blogger-poster/package.json`**
 
 ```json
 {
@@ -51,12 +51,12 @@
 }
 ```
 
-- [ ] **Step 2: Instalar e conferir**
+- [x] **Step 2: Instalar e conferir**
 
 Run: `cd blogger-poster && npm install && npm ls --depth=0`
 Expected: lista as duas dependências, sem erro.
 
-- [ ] **Step 3: Adicionar ao `.gitignore`** (o lock fica versionado; `node_modules` não)
+- [x] **Step 3: Adicionar ao `.gitignore`** (o lock fica versionado; `node_modules` não)
 
 ```
 blogger-poster/node_modules/
@@ -74,7 +74,7 @@ blogger-poster/state/
 **Interfaces:**
 - Produces: `STATE_PATH`, `JANELA_DEDUPE_HORAS=12`, `MIN_FONTE=300`, `normalizar(t)`, `quandoDe(post)`, `carregarEstado(file=STATE_PATH)`, `salvarEstado(posts, file=STATE_PATH)`, `jaPublicado(trend, posts)`, `registrarPost(posts, trend, file=STATE_PATH)`, `extrairTexto(html, limite=6000)`.
 
-- [ ] **Step 1: Escrever os testes que falham**
+- [x] **Step 1: Escrever os testes que falham**
 
 Nove casos de dedupe/html + dois de texto. Asserções exatas:
 
@@ -92,12 +92,12 @@ Nove casos de dedupe/html + dois de texto. Asserções exatas:
 
 Cada teste usa `mkdtempSync` para o arquivo de state. `now` é sempre `new Date()`; `post(titulo, horasAtras)` devolve `{titulo, urls: [], quando: new Date(Date.now()-h*3600e3).toISOString()}`.
 
-- [ ] **Step 2: Rodar e ver falhar**
+- [x] **Step 2: Rodar e ver falhar**
 
 Run: `cd blogger-poster && npm test`
 Expected: `Cannot find module .../post_news.js`
 
-- [ ] **Step 3: Implementar**
+- [x] **Step 3: Implementar**
 
 - `normalizar`: `String(t??"").normalize("NFD").replace(/\p{Diacritic}/gu,"").toLowerCase().split(/\s+/).filter(Boolean).join(" ")`.
 - `quandoDe`: `new Date(post.quando)`; `isNaN(getTime())` → `null`. Data sem timezone é interpretada como local, igual ao Python.
@@ -107,7 +107,7 @@ Expected: `Cannot find module .../post_news.js`
 - `registrarPost`: poda o que saiu da janela, adiciona `{titulo, urls, quando: new Date().toISOString()}`, salva. Erro de escrita só loga.
 - `extrairTexto`: remove `<(script|style|head)...>` com regex `[\s\S]`, remove tags, resolve `&nbsp;`/`&amp;`/`&lt;`/`&gt;`/`&quot;`/`&#39;`, colapsa espaços, corta em `limite`.
 
-- [ ] **Step 4: Rodar e ver passar**
+- [x] **Step 4: Rodar e ver passar**
 
 Run: `cd blogger-poster && npm test`
 Expected: 11 testes passando.
@@ -123,7 +123,7 @@ Expected: 11 testes passando.
 **Interfaces:**
 - Produces: `class TrendFetcher { constructor(rssUrl, {fetchImpl, sleep}={}); static parseXml(xml); async fetchTopTrend(retries=3) }`. Item: `{title, traffic, news_url, news_urls, image_url}`.
 
-- [ ] **Step 1: Teste com fixture**
+- [x] **Step 1: Teste com fixture**
 
 XML de exemplo com 2 itens, `ht:approx_traffic` = `"+1,000,000"` e `"+500"`, e um `<item>` **sem** array (caso único em outro teste). Asserções:
 - `TrendFetcher.parseXml(xml)` devolve 2 itens
@@ -132,16 +132,16 @@ XML de exemplo com 2 itens, `ht:approx_traffic` = `"+1,000,000"` e `"+500"`, e u
 - fixture com **um** item só → `parseXml` devolve array de 1, sem exceção
 - XML inválido → `parseXml` lança; `fetchTopTrend` devolve `null` após 3 tentativas
 
-- [ ] **Step 2: Rodar e ver falhar**
+- [x] **Step 2: Rodar e ver falhar**
 
 Run: `cd blogger-poster && npm test`
 Expected: `TrendFetcher is not exported`
 
-- [ ] **Step 3: Implementar**
+- [x] **Step 3: Implementar**
 
 `new XMLParser({ ignoreAttributes:false, removeNSPrefix:true, trimValues:true })`; itens em `rss.channel.item`, normalizados com `[].concat(...)`. `traffic = parseInt(String(v).replace(/[+,]/g,""),10) || 0`. `fetchTopTrend` repete 3 vezes com `await sleep(2000)`; erro de rede/parse só loga; sem itens → `null`.
 
-- [ ] **Step 4: Rodar e ver passar**
+- [x] **Step 4: Rodar e ver passar**
 
 Run: `cd blogger-poster && npm test`
 Expected: 16 testes passando.
@@ -157,7 +157,7 @@ Expected: 16 testes passando.
 **Interfaces:**
 - Produces: `class ContentGenerator { constructor({fetchImpl, sleep}={}); async generate(trend, source); static parse(bruto, trend); static montarHtml(trend, corpo) }`. `generate` devolve `[titulo, html]`.
 
-- [ ] **Step 1: Testes de retry e parse**
+- [x] **Step 1: Testes de retry e parse**
 
 - 429 nas 3 tentativas → `rejects` com mensagem contendo `429`
 - 429 e depois 200 → resolve `["T","<p>x</p>"]`, `fetch` chamado 2x
@@ -169,13 +169,13 @@ Expected: 16 testes passando.
 
 O `fetch` falso devolve `new Response(corpo, {status})`. `sleep` injetado é `() => {}`.
 
-- [ ] **Step 2: Rodar e ver falhar** — `npm test` → 7 falhas.
+- [x] **Step 2: Rodar e ver falhar** — `npm test` → 7 falhas.
 
-- [ ] **Step 3: Implementar**
+- [x] **Step 3: Implementar**
 
 3 tentativas; erro de rede na 3ª → `throw new Error("LLM inacessível após 3 tentativas: ...")`; `status === 429 || status >= 500` com tentativa < 3 → espera e repete; na saída, 429 → erro com `resp.text()` cortado em 300; `!resp.ok` → erro com status; sucesso → `data.choices[0].message.content` → `parse`. Prompt: copiar o texto do `post_news.py` sem alterar uma palavra.
 
-- [ ] **Step 4: Rodar e ver passar** — 23 testes.
+- [x] **Step 4: Rodar e ver passar** — testes da etapa.
 
 ---
 
@@ -188,20 +188,20 @@ O `fetch` falso devolve `new Response(corpo, {status})`. `sleep` injetado é `()
 **Interfaces:**
 - Produces: `SMTP_HOST="smtp.gmail.com"`, `SMTP_PORT=587`, `opcoesTransporte()`, `async sendEmail(to, subject, html, {transport}={})`. Erro sem credencial: `EMAIL_USER e APP_PASSWORD são obrigatórios`.
 
-- [ ] **Step 1: Testes**
+- [x] **Step 1: Testes**
 
 - `opcoesTransporte()` com env preenchida → `{host:"smtp.gmail.com", port:587, secure:false, requireTLS:true, auth:{user,pass}}`
 - `sendEmail` com transporte falso → `sendMail` recebe `{from, to, subject, html}` com os valores passados, assunto com acento intacto
 - sem `EMAIL_USER`/`APP_PASSWORD` → `rejects` com mensagem citando `EMAIL_USER`
 - CLI sem credencial: `spawnSync(process.execPath, ["scripts/enviar_email.js","a@b","s","<p>x</p>"])` → exit != 0, stderr contém `EMAIL_USER`, nunca a senha
 
-- [ ] **Step 2: Rodar e ver falhar**
+- [x] **Step 2: Rodar e ver falhar**
 
-- [ ] **Step 3: Implementar**
+- [x] **Step 3: Implementar**
 
 `nodemailer.createTransport(opcoesTransporte())`, `await transport.sendMail({from:user,to,subject,html})`. CLI: `argv` com 3 posicionais, senão `console.error("uso: ...")` + `process.exit(2)`; erro de envio → `console.error(e.message)` + `process.exit(1)` (nunca imprime senha).
 
-- [ ] **Step 4: Rodar e ver passar** — 27 testes.
+- [x] **Step 4: Rodar e ver passar** — 27 testes.
 
 ---
 
@@ -214,7 +214,7 @@ O `fetch` falso devolve `new Response(corpo, {status})`. `sleep` injetado é `()
 **Interfaces:**
 - Produces: `async main(argv, {fetcher, generator, fetchImpl, sendEmail, stateFile, log}={})` → código de saída `0|1`. Sem `deps`, usa os padrões reais.
 
-- [ ] **Step 1: Testes de integração**
+- [x] **Step 1: Testes de integração**
 
 - `main(["--email","destino@blogger.com"], {fetcher, fetchImpl, sendEmail, stateFile})` com fonte de 400×"palavra " → `sendEmail` chamado 1x com `(destino, "Título gerado", "<p>materia</p>")`; state gravado com o título da trend
 - fonte curta (<300 chars) nas duas URLs → `generator.generate` não chamado, `sendEmail` não chamado, state registra "Tema em alta"
@@ -222,13 +222,13 @@ O `fetch` falso devolve `new Response(corpo, {status})`. `sleep` injetado é `()
 - falha de `sendEmail` → retorno `1` e `log.error` com a mensagem do erro
 - `main([])` sem `--email` → retorno `1` e `log.error` citando `--email`
 
-- [ ] **Step 2: Rodar e ver falhar** — 5 falhas.
+- [x] **Step 2: Rodar e ver falhar** — 5 falhas.
 
-- [ ] **Step 3: Implementar**
+- [x] **Step 3: Implementar**
 
 Fluxo idêntico ao Python: busca trend → dedupe → tenta cada URL (`User-Agent: Mozilla/5.0`, timeout 15s), fica com o texto mais longo, para quando `>=1500` → fonte `<300` registra e sai `0` → `generate` → `montarHtml` → `sendEmail` (erro → log + `1`) → `registrarPost` → `0`. CLI no fim do arquivo: `main(process.argv.slice(2)).then(c => { process.exitCode = c; })`.
 
-- [ ] **Step 4: Rodar e ver passar** — 32 testes.
+- [x] **Step 4: Rodar e ver passar** — 32 testes.
 
 ---
 
@@ -237,23 +237,23 @@ Fluxo idêntico ao Python: busca trend → dedupe → tenta cada URL (`User-Agen
 **Files:**
 - Modify: `.github/workflows/postar-noticia-no-blog.yml`
 - Modify: `README.md`
-- Delete: `blogger-poster/scripts/*.py`, `blogger-poster/tests/`, `requirements.txt`
+- Delete: `scripts/*.py`, `tests/`, `requirements.txt`
 
-- [ ] **Step 1: Workflow**
+- [x] **Step 1: Workflow**
 
 Trocar `actions/setup-python` por `actions/setup-node@v4` (`node-version: "22"`), `pip install -r requirements.txt` por `npm ci --prefix blogger-poster`, e o passo final por `node blogger-poster/scripts/post_news.js --email "$BLOG_EMAIL"`. Cache de `state/` não muda.
 
-- [ ] **Step 2: README** — comando local passa a `node blogger-poster/scripts/post_news.js --email "$BLOG_EMAIL"`; citar `npm ci --prefix blogger-poster`.
+- [x] **Step 2: README** — comando local passa a `node blogger-poster/scripts/post_news.js --email "$BLOG_EMAIL"`; citar `npm ci --prefix blogger-poster`.
 
-- [ ] **Step 3: Apagar os arquivos Python** com `git rm`.
+- [x] **Step 3: Apagar os arquivos Python** com `git rm`.
 
-- [ ] **Step 4: Verificar**
+- [x] **Step 4: Verificar**
 
 Run: `cd blogger-poster && npm test` → 32/32.
 Run: `grep -rn "python\|\.py" .github/workflows/ README.md` → nada.
 Run: `python3 -c "import yaml,sys; yaml.safe_load(open('.github/workflows/postar-noticia-no-blog.yml'))"` → sem erro.
 
-- [ ] **Step 5: Validação real (manual, antes do push)**
+- [x] **Step 5: Validação real (manual, antes do push)**
 
 Run: `set -a; . ./.env; set +a; node blogger-poster/scripts/post_news.js --email "$EMAIL_USER"`
 Expected: log de matéria gerada, e-mail chega no Gmail pessoal com imagem centralizada. Nada publicado no Blogger.
@@ -262,7 +262,7 @@ Expected: log de matéria gerada, e-mail chega no Gmail pessoal com imagem centr
 
 ## Self-Review
 
-- **Cobertura da spec:** metas (paridade, 23 testes, workflow intacto) → Tasks 2-7. Libs e layout → Task 1. `state/` via `__dirname` → Global Constraints + Task 2. Risco do parser → Task 3. Validação com Gmail → Task 7 Step 5.
+- **Cobertura da spec:** metas (paridade, 23 testes portados, workflow intacto) → Tasks 2-7. Libs e layout → Task 1. `state/` via `__dirname` → Global Constraints + Task 2. Risco do parser → Task 3. Validação com Gmail → Task 7 Step 5.
 - **Tipos:** os nomes de `main`/`generate`/`parse`/`montarHtml` batem entre Tasks 2-6.
 - **Desvio consciente dos testes Python:** `test_post_news_email` e `test_enviar_email` afirmavam detalhes de `subprocess`. Em JS afirmam o efeito (`sendEmail` chamado com os 3 argumentos). Mesmo número de testes, mesma cobertura de comportamento.
 
@@ -277,4 +277,5 @@ Expected: log de matéria gerada, e-mail chega no Gmail pessoal com imagem centr
 - **Review independente:** 0 Critical, 1 Important (teste "fonte mais completa" usava uma URL só, cobrindo o loop por acidente), 8 Minor. O Important foi corrigido: teste com 3 URLs prova que a mais longa é usada e que o `break` em 1500 evita a terceira. Provado por mutação: com `>` trocado por `<`, o teste falha. 37 testes.
 - **Minor 3 e 4 corrigidos:** `opcoesTransporte` devolve `connectionTimeout`/`socketTimeout` de 30s (paridade com `smtplib(timeout=30)`), e `lerArgEmail` aceita `--email=valor` como o `argparse`. 38 testes.
 - **Minor 5 e 8 corrigidos:** removido `ContentGenerator.montarHtml`, que era código morto (o `main` chama a função do módulo). Teste novo cobre `quando` ausente ou inválido no dedupe. 39 testes.
+- **Segunda review (no PR):** 0 Critical, 1 Important (nenhum teste usava o formato de `quando` que o cache do Python gravou, `+00:00` com microssegundos), 9 Minor. Corrigidos: teste desse formato, `Array.isArray` em `post.urls` (cache corrompido não derruba a rotina), escape de `'`, retry de parse XML inválido, contagem de chamadas no teste de 429, teste de "nenhuma trend", docs e `.gitignore` acertados. 43 testes.
 
