@@ -1,0 +1,13 @@
+{
+  "name": "blogger-poster",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node --test test/rotinas.test.js"
+  },
+  "dependencies": {
+    "fast-xml-parser": "^5.12.0",
+    "nodemailer": "^10.3.1"
+  }
+}
