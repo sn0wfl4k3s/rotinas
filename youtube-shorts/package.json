@@ -1,0 +1,14 @@
+{
+  "name": "youtube-shorts-pipeline",
+  "version": "1.0.0",
+  "description": "Pipeline: assunto -> MoneyPrinterTurbo -> YouTube Short",
+  "type": "module",
+  "private": true,
+  "dependencies": {
+    "@google-cloud/local-auth": "^3.0.1",
+    "googleapis": "^144.0.0"
+  },
+  "scripts": {
+    "test": "node --test test/rotina.test.js"
+  }
+}

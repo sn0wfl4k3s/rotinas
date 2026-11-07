@@ -9,3 +9,6 @@ scripts/get_token.sh
 scripts/post_blog.sh
 scripts/post_news_api.py
 scripts/post_news_full.py
+youtube-shorts/credentials/
+youtube-shorts/node_modules/
+youtube-shorts/state/

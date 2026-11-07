@@ -5,6 +5,7 @@ Automações pessoais rodando em GitHub Actions.
 | Rotina | Workflow |
 |---|---|
 | `postar-noticia-no-blog` | `.github/workflows/postar-noticia-no-blog.yml` |
+| `youtube-shorts` | `.github/workflows/youtube-shorts.yml` (4x/dia, código em `youtube-shorts/`) |
 
 ## postar-noticia-no-blog
 
