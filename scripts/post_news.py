@@ -27,9 +27,8 @@ def _normalizar(titulo):
     return " ".join(sem_acento.lower().split())
 
 
-_TAGS_NO_FIM = re.compile(r"\[\s*([^\]]*)\]\s*$")
-
-
+def _quando_de(post):
+    try:
         quando = datetime.fromisoformat(post["quando"])
     except (KeyError, ValueError, TypeError):
         return None
