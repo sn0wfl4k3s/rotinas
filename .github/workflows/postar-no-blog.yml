@@ -2,8 +2,8 @@ name: postar-no-blog
 
 on:
   schedule:
-    # 24x ao dia: de hora em hora (UTC). BRT = UTC-3.
-    - cron: "0 * * * *"
+    # 1x ao dia (UTC). BRT = UTC-3.
+    - cron: "0 6 * * *"
   workflow_dispatch:
 
 permissions:

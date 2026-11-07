@@ -9,7 +9,7 @@ Automações pessoais rodando em GitHub Actions.
 
 ## postar-no-blog
 
-Google Trends BR → maior tendência → reescrita via LLM → envio por e-mail. Roda de hora em hora.
+Google Trends BR → maior tendência → reescrita via LLM → envio por e-mail. Roda 1 vez ao dia.
 
 Rodar localmente:
 
