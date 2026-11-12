@@ -20,7 +20,7 @@ export function montarConfig(exemplo, { llmKey, llmModel, pexelsKey }) {
   };
   let texto = exemplo;
   for (const [chave, valor] of Object.entries(valores)) {
-    const re = new RegExp(`^${chave} *=.*$`, "m");
+    const re = new RegExp(`^#?\\s*${chave} *=.*$`, "m");
     if (!re.test(texto)) throw new Error(`chave ausente no exemplo: ${chave}`);
     texto = texto.replace(re, `${chave} = ${valor}`);
   }

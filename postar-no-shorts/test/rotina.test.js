@@ -59,7 +59,7 @@ test("montarMetadados mantém título que já tem #Shorts", () => {
 const EXEMPLO = [
   'llm_provider = "moonshot"',
   'pexels_api_keys = []',
-  'subtitle_position = "bottom"',
+  '# subtitle_position = "bottom"',
   'gemini_api_key = ""',
   'gemini_model_name = ""',
 ].join("\n");
@@ -69,6 +69,7 @@ test("montarConfig troca provedor e chaves sem tocar no resto", () => {
   assert.match(texto, /^llm_provider = "gemini"$/m);
   assert.match(texto, /^gemini_api_key = "K1"$/m);
   assert.match(texto, /^gemini_model_name = "gemini-3.5-flash"$/m);
+  assert.match(texto, /^subtitle_position = "two_thirds_bottom"$/m);
   assert.match(texto, /^pexels_api_keys = \["P1"\]$/m);
 });
 
