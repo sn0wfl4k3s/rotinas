@@ -14,7 +14,7 @@ export function montarConfig(exemplo, { llmKey, llmModel, pexelsKey }) {
   const valores = {
     llm_provider: '"gemini"',
     gemini_api_key: JSON.stringify(llmKey),
-    gemini_model_name: JSON.stringify(llmModel || "gemini-3.5-flash"),
+    gemini_model_name: JSON.stringify(llmModel || "gemini-3.1-flash-lite"),
     pexels_api_keys: JSON.stringify([pexelsKey]),
   };
   let texto = exemplo;

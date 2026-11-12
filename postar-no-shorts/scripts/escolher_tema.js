@@ -72,7 +72,7 @@ async function pedirTema(historico) {
     method: "POST",
     headers: { "Content-Type": "application/json", Authorization: `Bearer ${key}` },
     body: JSON.stringify({
-      model: process.env.LLM_MODEL || "gemini-3.5-flash",
+      model: process.env.LLM_MODEL || "gemini-3.1-flash-lite",
       messages: [{ role: "user", content: montarPrompt(historico) }],
       temperature: 1.0,
     }),
