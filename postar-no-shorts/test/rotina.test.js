@@ -59,6 +59,7 @@ test("montarMetadados mantém título que já tem #Shorts", () => {
 const EXEMPLO = [
   'llm_provider = "moonshot"',
   'pexels_api_keys = []',
+  'subtitle_position = "bottom"',
   'gemini_api_key = ""',
   'gemini_model_name = ""',
 ].join("\n");
