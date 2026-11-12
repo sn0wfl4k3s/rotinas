@@ -60,7 +60,7 @@ const EXEMPLO = [
   'llm_provider = "moonshot"',
   'pexels_api_keys = []',
   '# subtitle_position = "bottom"',
-  '# custom_position = 70.0',
+  '# custom_position = 80.0',
   'gemini_api_key = ""',
   'gemini_model_name = ""',
 ].join("\n");
@@ -71,7 +71,7 @@ test("montarConfig troca provedor e chaves sem tocar no resto", () => {
   assert.match(texto, /^gemini_api_key = "K1"$/m);
   assert.match(texto, /^gemini_model_name = "gemini-3.5-flash"$/m);
   assert.match(texto, /^subtitle_position = "custom"$/m);
-  assert.match(texto, /^custom_position = 70(\.0)?$/m);
+  assert.match(texto, /^custom_position = 80(\.0)?$/m);
   assert.match(texto, /^pexels_api_keys = \["P1"\]$/m);
 });
 
