@@ -51,6 +51,12 @@ jobs:
           printf '%s' "$YOUTUBE_CLIENT_SECRET" > postar-no-RdS/credentials/client_secret.json
           printf '%s' "$YOUTUBE_TOKEN" > postar-no-RdS/credentials/token.json
 
+      - name: Verificar token e canal
+        env:
+          CANAL_ESPERADO: Refúgio do Senhor
+          YOUTUBE_CREDENTIALS_DIR: ${{ github.workspace }}/postar-no-RdS/credentials
+        run: bun postar-no-RdS/scripts/verificar_token.js
+
       - name: Restaurar histórico de temas
         uses: actions/cache@v4
         with:
