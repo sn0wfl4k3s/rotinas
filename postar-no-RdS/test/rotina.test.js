@@ -145,3 +145,8 @@ test("token: confere canal esperado", () => {
   assert.equal(conferirCanal(canais, "Refúgio do Senhor").id, "UC2");
   assert.equal(conferirCanal(canais, "Inexistente"), null);
 });
+
+test("token: comparacao tolera caixa e acento", () => {
+  const canais = [{ id: "UC2", snippet: { title: "REFUGIO DO SENHOR" } }];
+  assert.equal(conferirCanal(canais, "Refúgio do Senhor").id, "UC2");
+});

@@ -10,12 +10,22 @@ const CRED_DIR = process.env.YOUTUBE_CREDENTIALS_DIR || path.join(__dirname, "..
 const CLIENT_SECRET = path.join(CRED_DIR, "client_secret.json");
 const TOKEN = path.join(CRED_DIR, "token.json");
 
+export function normalizarTitulo(texto) {
+  return String(texto || "")
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
 export function conferirCanal(canais, esperado) {
-  return (canais || []).find((c) => c?.snippet?.title === esperado) || null;
+  const alvo = normalizarTitulo(esperado);
+  return (canais || []).find((c) => normalizarTitulo(c?.snippet?.title) === alvo) || null;
 }
 
 function descrever(canais) {
-  return (canais || []).map((c) => `${c.snippet.title} (${c.id})`).join(", ") || "nenhum";
+  return (canais || []).map((c) => `${c?.snippet?.title || "(sem titulo)"} (${c?.id || "?"})`).join(", ") || "nenhum";
 }
 
 async function main() {
@@ -33,13 +43,10 @@ async function main() {
   if (!canais.length) throw new Error("Token sem canais associados");
 
   const esperado = process.env.CANAL_ESPERADO;
-  if (esperado) {
-    const canal = conferirCanal(canais, esperado);
-    if (!canal) throw new Error(`Token aponta para ${descrever(canais)}; esperado: ${esperado}`);
-    console.log(`Canal OK: ${canal.snippet.title} (${canal.id})`);
-    return;
-  }
-  console.log(`Canais do token: ${descrever(canais)}`);
+  if (!esperado) throw new Error("CANAL_ESPERADO não definido");
+  const canal = conferirCanal(canais, esperado);
+  if (!canal) throw new Error(`Token aponta para ${descrever(canais)}; esperado: ${esperado}`);
+  console.log(`Canal OK: ${canal.snippet.title} (${canal.id})`);
 }
 
 if (process.argv[1] === fileURLToPath(import.meta.url)) {
