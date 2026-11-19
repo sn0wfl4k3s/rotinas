@@ -1,4 +1,4 @@
-name: postar-no-shorts
+name: postar-no-R43
 
 on:
   schedule:
@@ -11,7 +11,7 @@ permissions:
   issues: write
 
 concurrency:
-  group: postar-no-shorts
+  group: postar-no-R43
   cancel-in-progress: false
 
 jobs:
@@ -38,28 +38,28 @@ jobs:
           bun-version: "1.3.14"
 
       - run: bun install --frozen-lockfile
-        working-directory: postar-no-shorts
+        working-directory: postar-no-R43
 
       - name: Credenciais do YouTube
         env:
           YOUTUBE_CLIENT_SECRET: ${{ secrets.YOUTUBE_CLIENT_SECRET }}
           YOUTUBE_TOKEN: ${{ secrets.YOUTUBE_TOKEN }}
         run: |
-          mkdir -p postar-no-shorts/credentials
-          printf '%s' "$YOUTUBE_CLIENT_SECRET" > postar-no-shorts/credentials/client_secret.json
-          printf '%s' "$YOUTUBE_TOKEN" > postar-no-shorts/credentials/token.json
+          mkdir -p postar-no-R43/credentials
+          printf '%s' "$YOUTUBE_CLIENT_SECRET" > postar-no-R43/credentials/client_secret.json
+          printf '%s' "$YOUTUBE_TOKEN" > postar-no-R43/credentials/token.json
 
-      # Histórico de temas entre execuções. restore-keys pega o cache mais recente.
+      # Prefixo próprio: restore por prefixo não pode pegar o cache da RdS.
       - name: Restaurar histórico de temas
         uses: actions/cache@v4
         with:
-          path: postar-no-shorts/state/
-          key: youtube-state-${{ github.run_id }}
+          path: postar-no-R43/state/
+          key: youtube-state-r43-${{ github.run_id }}
           restore-keys: |
-            youtube-state-
+            youtube-state-r43-
 
       - name: Configurar MoneyPrinterTurbo
-        run: bun postar-no-shorts/scripts/mpt_config.js
+        run: bun postar-no-R43/scripts/mpt_config.js
 
       - name: Subir MoneyPrinterTurbo
         working-directory: MoneyPrinterTurbo
@@ -76,25 +76,25 @@ jobs:
 
       - name: Escolher tema
         run: |
-          bun postar-no-shorts/scripts/escolher_tema.js > tema.txt
+          bun postar-no-R43/scripts/escolher_tema.js > tema.txt
           echo "TEMA=$(cat tema.txt)" >> "$GITHUB_ENV"
           cat tema.txt
 
       - name: Gerar Short
         run: |
-          bun postar-no-shorts/scripts/mpt_generate.js \
+          bun postar-no-R43/scripts/mpt_generate.js \
             --subject "$TEMA" --voice pt-BR-AntonioNeural --clip-duration 3 \
             --mpt-home "$MPT_HOME" > gen.json
           echo "MP4=$(bun -p 'JSON.parse(require("fs").readFileSync("gen.json","utf-8")).files[0]')" >> "$GITHUB_ENV"
 
       - name: Gerar metadados
-        run: bun postar-no-shorts/scripts/gen_metadata.js --subject "$TEMA" > meta.json
+        run: bun postar-no-R43/scripts/gen_metadata.js --subject "$TEMA" > meta.json
 
       - name: Publicar no YouTube
-        run: bun postar-no-shorts/scripts/yt_upload.js --file "$MP4" --meta-json meta.json --privacy public > up.json && cat up.json
+        run: bun postar-no-R43/scripts/yt_upload.js --file "$MP4" --meta-json meta.json --privacy public > up.json && cat up.json
 
       - name: Registrar tema publicado
-        run: bun postar-no-shorts/scripts/escolher_tema.js --registrar "$TEMA"
+        run: bun postar-no-R43/scripts/escolher_tema.js --registrar "$TEMA"
 
       - name: Diagnóstico do MoneyPrinterTurbo
         if: failure()
@@ -116,7 +116,7 @@ jobs:
           GH_TOKEN: ${{ github.token }}
           RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
         run: |
-          TITULO="Falha na rotina postar-no-shorts"
+          TITULO="Falha na rotina postar-no-R43"
           EXISTENTE=$(gh issue list --repo "${{ github.repository }}" --state open \
             --search "\"$TITULO\" in:title" --json number --jq '.[0].number // empty')
           if [ -n "$EXISTENTE" ]; then
