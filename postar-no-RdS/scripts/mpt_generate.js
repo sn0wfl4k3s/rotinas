@@ -99,8 +99,14 @@ console.error(`[mpt] tarefa criada: ${taskId}`);
 
 const deadline = Date.now() + Number(a.timeout) * 1000;
 const pollMs = Number(a.poll) * 1000;
-const stallMs = Number(a["stall-timeout"]) * 1000;
+const stallSeg = Number(a["stall-timeout"]);
+if (!Number.isFinite(stallSeg) || stallSeg <= 0) {
+  console.error("ERRO: --stall-timeout deve ser um número positivo em segundos");
+  process.exit(2);
+}
+const stallMs = stallSeg * 1000;
 let lastProgress = -1;
+let lastState = null;
 let lastProgressAt = Date.now();
 let done = false;
 while (Date.now() < deadline) {
@@ -114,9 +120,10 @@ while (Date.now() < deadline) {
     continue;
   }
   const d = t?.data || {};
-  if (d.progress !== lastProgress) {
+  if (d.progress !== lastProgress || d.state !== lastState) {
     console.error(`[mpt] estado=${d.state} progresso=${d.progress}%`);
     lastProgress = d.progress;
+    lastState = d.state;
     lastProgressAt = Date.now();
   }
   if (d.state === 1) { done = true; break; }   // COMPLETE
@@ -125,7 +132,8 @@ while (Date.now() < deadline) {
     process.exit(3);
   }
   if (Date.now() - lastProgressAt > stallMs) {
-    console.error(`ERRO: progresso travado em ${d.progress}% por ${Math.round(stallMs / 1000)}s; abortando para nova tentativa.`);
+    const parado = Math.round((Date.now() - lastProgressAt) / 1000);
+    console.error(`ERRO: sem mudança (estado=${d.state}, progresso=${d.progress}%) por ${parado}s; limite ${stallSeg}s. Abortando.`);
     process.exit(6);
   }
   await sleep(pollMs);
