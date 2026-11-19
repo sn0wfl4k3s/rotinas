@@ -2,8 +2,9 @@ name: postar-no-RdS
 
 on:
   schedule:
-    # 2x ao dia (UTC). 03,15 UTC = 00,12 BRT. Geral faz 4x/dia; total 6 uploads/dia.
-    - cron: "0 3,15 * * *"
+    # 4x ao dia (UTC). 02,08,14,20 UTC = 23,05,11,17 BRT.
+    # R43 roda em 00,06,12,18 UTC; horários não colidem.
+    - cron: "0 2,8,14,20 * * *"
   workflow_dispatch:
 
 permissions:

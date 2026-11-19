@@ -6,9 +6,11 @@ Automações pessoais rodando em GitHub Actions.
 |---|---|
 | `postar-no-blog` | `.github/workflows/postar-no-blog.yml` (código em `postar-no-blog/`) |
 | `postar-no-R43` | `.github/workflows/postar-no-R43.yml` (4x/dia, código em `postar-no-R43/`) |
-| `postar-no-RdS` | `.github/workflows/postar-no-RdS.yml` (2x/dia, código em `postar-no-RdS/`) |
+| `postar-no-RdS` | `.github/workflows/postar-no-RdS.yml` (4x/dia, 23/05/11/17 BRT, código em `postar-no-RdS/`) |
 
 Opcional: secret `GH_ADMIN_TOKEN` (PAT com escopo `repo`) permite aos workflows regravar `YOUTUBE_TOKEN`/`YOUTUBE_TOKEN_RDS` quando o OAuth renova o token. Sem ele, o upload funciona, mas a renovação não volta para o GitHub.
+
+Quota: R43 (4x) + RdS (4x) = 8 uploads/dia. Projeto GCP/OAuth compartilhado tem ~6/dia; use projeto/OAuth separado para RdS ou reduza a frequência.
 
 ## postar-no-R43
 
