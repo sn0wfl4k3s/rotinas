@@ -49,14 +49,15 @@ jobs:
           printf '%s' "$YOUTUBE_CLIENT_SECRET" > postar-no-shorts/credentials/client_secret.json
           printf '%s' "$YOUTUBE_TOKEN" > postar-no-shorts/credentials/token.json
 
-      # Histórico de temas entre execuções. restore-keys pega o cache mais recente.
+      # Prefixo próprio: restore por prefixo não pode pegar o cache da bíblia.
+      # Cache antigo (youtube-state-) fica de fora de propósito; só afeta dedupe.
       - name: Restaurar histórico de temas
         uses: actions/cache@v4
         with:
           path: postar-no-shorts/state/
-          key: youtube-state-${{ github.run_id }}
+          key: youtube-state-geral-${{ github.run_id }}
           restore-keys: |
-            youtube-state-
+            youtube-state-geral-
 
       - name: Configurar MoneyPrinterTurbo
         run: bun postar-no-shorts/scripts/mpt_config.js

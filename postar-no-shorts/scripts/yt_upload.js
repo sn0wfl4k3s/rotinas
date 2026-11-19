@@ -20,7 +20,7 @@ import { parseArgs } from "node:util";
 import { google } from "googleapis";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const CRED_DIR = path.join(__dirname, "..", "credentials");
+const CRED_DIR = process.env.YOUTUBE_CREDENTIALS_DIR || path.join(__dirname, "..", "credentials");
 const CLIENT_SECRET = path.join(CRED_DIR, "client_secret.json");
 const TOKEN = path.join(CRED_DIR, "token.json");
 

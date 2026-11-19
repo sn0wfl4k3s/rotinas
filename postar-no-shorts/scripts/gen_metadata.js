@@ -7,6 +7,7 @@
  * Ex.: node gen_metadata.js --subject "Por que o sangue do polvo é azul"
  */
 import { parseArgs } from "node:util";
+import { carregarPerfil, montarPromptMetadados } from "./perfil.js";
 
 export function montarMetadados(bruto, subject) {
   const texto = String(bruto || "").replace(/^```(?:json)?/m, "").replace(/```$/m, "").trim();
@@ -18,17 +19,7 @@ export function montarMetadados(bruto, subject) {
 }
 
 function montarPrompt(subject, script) {
-  return `Você cria metadados para vídeos curtos (YouTube Shorts) em pt-BR.
-Tema: ${subject}
-Roteiro: ${script || "(não fornecido)"}
-
-Responda APENAS com um JSON válido, sem markdown, no formato:
-{"title": "...", "description": "...", "tags": ["...", "..."]}
-
-Regras:
-- title: curto e direto, no máximo 40 caracteres antes de #Shorts.
-- description: 2 a 4 linhas, com o gancho do vídeo e 3 a 5 hashtags ao final.
-- tags: 8 a 12 palavras-chave, sem #.`;
+  return montarPromptMetadados(carregarPerfil(), subject, script);
 }
 
 async function main() {

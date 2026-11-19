@@ -8,9 +8,9 @@
 import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import { carregarPerfil, montarPromptTema, caminhoEstado } from "./perfil.js";
 
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
-export const STATE_FILE = path.join(__dirname, "..", "state", "temas.json");
+export const STATE_FILE = caminhoEstado();
 export const MAX_HISTORICO = 30;
 export const MAX_TENTATIVAS = 3;
 
@@ -54,14 +54,7 @@ export function salvar(temas, file = STATE_FILE) {
 }
 
 export function montarPrompt(historico) {
-  const evitar = historico.slice(-MAX_HISTORICO).map((t) => `- ${t}`).join("\n") || "(nenhum)";
-  return `Você escolhe um assunto para um YouTube Short em português do Brasil.
-Escolha UMA curiosidade real, verificável e pouco conhecida sobre ciência, natureza, corpo humano ou história.
-Não repita nenhum destes temas já publicados:
-${evitar}
-
-Responda APENAS com JSON válido, sem markdown: {"tema": "..."}
-O tema é um assunto curto, de até 80 caracteres. Ex.: "Por que o sangue do polvo é azul".`;
+  return montarPromptTema(carregarPerfil(), historico.slice(-MAX_HISTORICO));
 }
 
 async function pedirTema(historico) {

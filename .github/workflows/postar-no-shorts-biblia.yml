@@ -1,0 +1,130 @@
+name: postar-no-shorts-biblia
+
+on:
+  schedule:
+    # 2x ao dia (UTC). 03,15 UTC = 00,12 BRT. Junto com o geral (4x/dia) respeita
+    # a quota do YouTube (~6 uploads/dia por projeto de API).
+    - cron: "0 3,15 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: write
+
+concurrency:
+  group: postar-no-shorts-biblia
+  cancel-in-progress: false
+
+jobs:
+  publicar:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    env:
+      MPT_HOME: ${{ github.workspace }}/MoneyPrinterTurbo
+      LLM_API_KEY: ${{ secrets.LLM_API_KEY }}
+      LLM_BASE_URL: ${{ vars.LLM_BASE_URL }}
+      LLM_MODEL: ${{ vars.LLM_MODEL }}
+      PEXELS_API_KEY: ${{ secrets.PEXELS_API_KEY }}
+      SHORTS_PROFILE: biblia
+      YOUTUBE_CREDENTIALS_DIR: ${{ github.workspace }}/postar-no-shorts/credentials/biblia
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/checkout@v4
+        with:
+          repository: harry0703/MoneyPrinterTurbo
+          ref: 8b0206be2c7977e3bc3cf25ff99a2adc3c9c65f9
+          path: MoneyPrinterTurbo
+
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: "1.3.14"
+
+      - run: bun install --frozen-lockfile
+        working-directory: postar-no-shorts
+
+      - name: Credenciais do YouTube
+        env:
+          YOUTUBE_CLIENT_SECRET: ${{ secrets.YOUTUBE_CLIENT_SECRET_BIBLIA }}
+          YOUTUBE_TOKEN: ${{ secrets.YOUTUBE_TOKEN_BIBLIA }}
+        run: |
+          mkdir -p postar-no-shorts/credentials/biblia
+          printf '%s' "$YOUTUBE_CLIENT_SECRET" > postar-no-shorts/credentials/biblia/client_secret.json
+          printf '%s' "$YOUTUBE_TOKEN" > postar-no-shorts/credentials/biblia/token.json
+
+      # Histórico de temas entre execuções. Prefixo próprio para não cruzar com o geral.
+      - name: Restaurar histórico de temas
+        uses: actions/cache@v4
+        with:
+          path: postar-no-shorts/state/
+          key: youtube-state-biblia-${{ github.run_id }}
+          restore-keys: |
+            youtube-state-biblia-
+
+      - name: Configurar MoneyPrinterTurbo
+        run: bun postar-no-shorts/scripts/mpt_config.js
+
+      - name: Subir MoneyPrinterTurbo
+        working-directory: MoneyPrinterTurbo
+        run: docker compose up -d --build
+
+      - name: Esperar API
+        run: |
+          for i in $(seq 1 60); do
+            curl -sf http://127.0.0.1:8080/docs >/dev/null && exit 0
+            sleep 5
+          done
+          echo "API não subiu em 5 minutos"
+          exit 1
+
+      - name: Escolher tema
+        run: |
+          bun postar-no-shorts/scripts/escolher_tema.js > tema.txt
+          echo "TEMA=$(cat tema.txt)" >> "$GITHUB_ENV"
+          cat tema.txt
+
+      - name: Gerar Short
+        run: |
+          bun postar-no-shorts/scripts/mpt_generate.js \
+            --subject "$TEMA" --voice pt-BR-AntonioNeural --clip-duration 3 \
+            --mpt-home "$MPT_HOME" > gen.json
+          echo "MP4=$(bun -p 'JSON.parse(require("fs").readFileSync("gen.json","utf-8")).files[0]')" >> "$GITHUB_ENV"
+
+      - name: Gerar metadados
+        run: bun postar-no-shorts/scripts/gen_metadata.js --subject "$TEMA" > meta.json
+
+      - name: Publicar no YouTube
+        run: bun postar-no-shorts/scripts/yt_upload.js --file "$MP4" --meta-json meta.json --privacy public --category 27 > up.json && cat up.json
+
+      - name: Registrar tema publicado
+        run: bun postar-no-shorts/scripts/escolher_tema.js --registrar "$TEMA"
+
+      - name: Diagnóstico do MoneyPrinterTurbo
+        if: failure()
+        working-directory: MoneyPrinterTurbo
+        run: docker compose logs --tail=300 api
+
+      - name: Apagar vídeo local
+        if: always()
+        run: '[ -n "$MP4" ] && rm -f "$MP4" || true'
+
+      - name: Desligar MoneyPrinterTurbo
+        if: always()
+        working-directory: MoneyPrinterTurbo
+        run: docker compose down
+
+      - name: Avisar falha
+        if: failure()
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          TITULO="Falha na rotina postar-no-shorts-biblia"
+          EXISTENTE=$(gh issue list --repo "${{ github.repository }}" --state open \
+            --search "\"$TITULO\" in:title" --json number --jq '.[0].number // empty')
+          if [ -n "$EXISTENTE" ]; then
+            gh issue comment "$EXISTENTE" --repo "${{ github.repository }}" --body "Nova falha: $RUN_URL"
+          else
+            gh issue create --repo "${{ github.repository }}" --title "$TITULO" \
+              --body "A rotina falhou. Log: $RUN_URL"
+          fi

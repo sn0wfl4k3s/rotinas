@@ -8,6 +8,9 @@ import {
 } from "../scripts/escolher_tema.js";
 import { montarMetadados } from "../scripts/gen_metadata.js";
 import { montarConfig } from "../scripts/mpt_config.js";
+import {
+  aplicar, caminhoEstado, carregarPerfil, montarPromptMetadados, montarPromptTema,
+} from "../scripts/perfil.js";
 
 test("normalizar ignora caixa, acento e espaços extras", () => {
   assert.equal(normalizar("  O Sangue  do Polvo é AZUL "), "o sangue do polvo e azul");
@@ -81,4 +84,52 @@ test("montarConfig falha sem chave, em vez de gerar config vazio", () => {
 
 test("montarConfig falha se o exemplo mudou e a chave sumiu", () => {
   assert.throws(() => montarConfig('llm_provider = "x"', { llmKey: "K", pexelsKey: "P" }));
+});
+
+function comPerfil(nome, fn) {
+  const antes = process.env.SHORTS_PROFILE;
+  if (nome === undefined) delete process.env.SHORTS_PROFILE;
+  else process.env.SHORTS_PROFILE = nome;
+  try {
+    return fn();
+  } finally {
+    if (antes === undefined) delete process.env.SHORTS_PROFILE;
+    else process.env.SHORTS_PROFILE = antes;
+  }
+}
+
+test("perfil padrão é geral sem SHORTS_PROFILE", () => {
+  comPerfil(undefined, () => assert.equal(carregarPerfil().nome, "geral"));
+});
+
+test("perfil biblia carrega", () => {
+  assert.equal(carregarPerfil("biblia").nome, "biblia");
+});
+
+test("montarPromptTema inclui histórico e não deixa placeholder", () => {
+  const prompt = montarPromptTema(carregarPerfil("biblia"), ["Tema antigo"]);
+  assert.match(prompt, /- Tema antigo/);
+  assert.match(prompt, /Bíblia/);
+  assert.equal(prompt.includes("{{"), false);
+});
+
+test("montarPromptMetadados inclui tema, roteiro e restrições do perfil", () => {
+  const prompt = montarPromptMetadados(carregarPerfil("biblia"), "Tema", "Roteiro");
+  assert.match(prompt, /Tema: Tema/);
+  assert.match(prompt, /Roteiro: Roteiro/);
+  assert.match(prompt, /reverente/);
+  assert.equal(prompt.includes("{{"), false);
+});
+
+test("caminhoEstado separa geral de biblia", () => {
+  assert.ok(caminhoEstado("geral").endsWith(path.join("state", "temas.json")));
+  assert.ok(caminhoEstado("biblia").endsWith(path.join("state", "biblia", "temas.json")));
+});
+
+test("carregarPerfil rejeita nome com path traversal", () => {
+  assert.throws(() => carregarPerfil("../../etcd"));
+});
+
+test("aplicar falha se faltar valor de placeholder", () => {
+  assert.throws(() => aplicar("oi {{NOME}}", {}));
 });
