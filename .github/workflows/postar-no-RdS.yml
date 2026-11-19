@@ -43,12 +43,20 @@ jobs:
 
       - name: Credenciais do YouTube
         env:
-          # Mesmo projeto/OAuth client do canal geral; só o token muda de canal.
+          # Segredo dedicado (projeto GCP próprio) tem prioridade.
+          # Fallback compartilhado mantém compatibilidade até a migração.
+          YOUTUBE_CLIENT_SECRET_RDS: ${{ secrets.YOUTUBE_CLIENT_SECRET_RDS }}
           YOUTUBE_CLIENT_SECRET: ${{ secrets.YOUTUBE_CLIENT_SECRET }}
           YOUTUBE_TOKEN: ${{ secrets.YOUTUBE_TOKEN_RDS }}
         run: |
           mkdir -p postar-no-RdS/credentials
-          printf '%s' "$YOUTUBE_CLIENT_SECRET" > postar-no-RdS/credentials/client_secret.json
+          if [ -n "$YOUTUBE_CLIENT_SECRET_RDS" ]; then
+            printf '%s' "$YOUTUBE_CLIENT_SECRET_RDS" > postar-no-RdS/credentials/client_secret.json
+            echo "OAuth client dedicado da RdS em uso."
+          else
+            printf '%s' "$YOUTUBE_CLIENT_SECRET" > postar-no-RdS/credentials/client_secret.json
+            echo "AVISO: usando OAuth client compartilhado; quota de 8 uploads/dia pode estourar."
+          fi
           printf '%s' "$YOUTUBE_TOKEN" > postar-no-RdS/credentials/token.json
 
       - name: Restaurar histórico de temas
