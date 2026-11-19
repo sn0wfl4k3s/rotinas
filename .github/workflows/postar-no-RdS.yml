@@ -56,8 +56,13 @@ jobs:
           else
             printf '%s' "$YOUTUBE_CLIENT_SECRET" > postar-no-RdS/credentials/client_secret.json
             echo "AVISO: usando OAuth client compartilhado; quota de 8 uploads/dia pode estourar."
+            echo "AVISO: ao migrar para YOUTUBE_CLIENT_SECRET_RDS, gere YOUTUBE_TOKEN_RDS com esse client."
           fi
           printf '%s' "$YOUTUBE_TOKEN" > postar-no-RdS/credentials/token.json
+          if [ ! -s postar-no-RdS/credentials/client_secret.json ] || [ ! -s postar-no-RdS/credentials/token.json ]; then
+            echo "ERRO: client_secret ou token OAuth vazio; verifique os secrets do repo."
+            exit 1
+          fi
 
       - name: Restaurar histórico de temas
         uses: actions/cache@v4
