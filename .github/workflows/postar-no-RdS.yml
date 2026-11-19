@@ -87,7 +87,7 @@ jobs:
             echo "[mpt] tentativa $tentativa/3"
             if bun postar-no-RdS/scripts/mpt_generate.js \
               --subject "$TEMA" --voice pt-BR-AntonioNeural --clip-duration 3 \
-              --mpt-home "$MPT_HOME" --timeout 2400 > gen.json; then
+              --mpt-home "$MPT_HOME" --timeout 2400 --stall-timeout 900 > gen.json; then
               break
             fi
             if [ "$tentativa" -eq 3 ]; then exit 1; fi

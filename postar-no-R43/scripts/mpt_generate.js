@@ -36,6 +36,7 @@ const { values: a } = parseArgs({
     "out-dir": { type: "string", default: "" },
     container: { type: "string", default: "moneyprinterturbo-api" },
     timeout: { type: "string", default: "1800" },
+    "stall-timeout": { type: "string", default: "900" },
     poll: { type: "string", default: "10" },
   },
 });
@@ -98,7 +99,9 @@ console.error(`[mpt] tarefa criada: ${taskId}`);
 
 const deadline = Date.now() + Number(a.timeout) * 1000;
 const pollMs = Number(a.poll) * 1000;
+const stallMs = Number(a["stall-timeout"]) * 1000;
 let lastProgress = -1;
+let lastProgressAt = Date.now();
 let done = false;
 while (Date.now() < deadline) {
   let t;
@@ -114,11 +117,16 @@ while (Date.now() < deadline) {
   if (d.progress !== lastProgress) {
     console.error(`[mpt] estado=${d.state} progresso=${d.progress}%`);
     lastProgress = d.progress;
+    lastProgressAt = Date.now();
   }
   if (d.state === 1) { done = true; break; }   // COMPLETE
   if (d.state === -1) {                          // FAILED
     console.error("ERRO: a geração falhou. Veja: docker compose logs webui");
     process.exit(3);
+  }
+  if (Date.now() - lastProgressAt > stallMs) {
+    console.error(`ERRO: progresso travado em ${d.progress}% por ${Math.round(stallMs / 1000)}s; abortando para nova tentativa.`);
+    process.exit(6);
   }
   await sleep(pollMs);
 }
