@@ -8,6 +8,7 @@ import {
 } from "../scripts/escolher_tema.js";
 import { montarMetadados, montarPrompt as montarPromptMeta } from "../scripts/gen_metadata.js";
 import { montarConfig } from "../scripts/mpt_config.js";
+import { chamarLLM } from "../scripts/llm.js";
 
 test("normalizar ignora caixa, acento e espaços extras", () => {
   assert.equal(normalizar("  O Sangue  do Polvo é AZUL "), "o sangue do polvo e azul");
@@ -97,4 +98,40 @@ test("metadados: prompt é cristão e proíbe sensacionalismo", () => {
   assert.match(prompt, /Tema: Isaque/);
   assert.match(prompt, /Roteiro: Roteiro/);
   assert.match(prompt, /revelação secreta/);
+});
+
+function comLLM(fn) {
+  const antes = process.env;
+  process.env = { ...antes, LLM_API_KEY: "k" };
+  return Promise.resolve(fn()).finally(() => {
+    process.env = antes;
+  });
+}
+
+test("llm: 503 tenta de novo e envia timeout", async () => {
+  await comLLM(async () => {
+    let chamadas = 0;
+    const conteudo = await chamarLLM("oi", {
+      fetchImpl: async (_url, opts) => {
+        chamadas += 1;
+        assert.ok(opts.signal);
+        if (chamadas === 1) return new Response("ocupado", { status: 503 });
+        return new Response(JSON.stringify({ choices: [{ message: { content: "ok" } }] }), { status: 200 });
+      },
+      sleep: async () => {},
+    });
+    assert.equal(conteudo, "ok");
+    assert.equal(chamadas, 2);
+  });
+});
+
+test("llm: sem chave falha antes da rede", async () => {
+  const antes = process.env;
+  process.env = { ...antes };
+  delete process.env.LLM_API_KEY;
+  try {
+    await assert.rejects(() => chamarLLM("oi"), /LLM_API_KEY/);
+  } finally {
+    process.env = antes;
+  }
 });
