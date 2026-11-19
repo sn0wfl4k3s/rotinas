@@ -8,6 +8,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import { chamarLLM } from "./llm.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 export const STATE_FILE = path.join(__dirname, "..", "state", "temas.json");
@@ -66,21 +67,8 @@ O tema é um assunto curto, de até 80 caracteres, sem quebra de linha. Ex.: "O 
 }
 
 async function pedirTema(historico) {
-  const base = (process.env.LLM_BASE_URL || "https://generativelanguage.googleapis.com/v1beta/openai").replace(/\/$/, "");
-  const key = process.env.LLM_API_KEY;
-  if (!key) throw new Error("LLM_API_KEY não definida");
-  const r = await fetch(`${base}/chat/completions`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json", Authorization: `Bearer ${key}` },
-    body: JSON.stringify({
-      model: process.env.LLM_MODEL || "gemini-3.1-flash-lite",
-      messages: [{ role: "user", content: montarPrompt(historico) }],
-      temperature: 1.0,
-    }),
-  });
-  if (!r.ok) throw new Error(`LLM HTTP ${r.status}: ${(await r.text()).slice(0, 300)}`);
-  const dados = await r.json();
-  return extrairTema(dados.choices[0].message.content);
+  const bruto = await chamarLLM(montarPrompt(historico), { temperature: 1.0 });
+  return extrairTema(bruto);
 }
 
 async function main(argv) {

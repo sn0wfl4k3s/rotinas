@@ -17,7 +17,7 @@ concurrency:
 jobs:
   publicar:
     runs-on: ubuntu-latest
-    timeout-minutes: 60
+    timeout-minutes: 90
     env:
       MPT_HOME: ${{ github.workspace }}/MoneyPrinterTurbo
       LLM_API_KEY: ${{ secrets.LLM_API_KEY }}
@@ -82,9 +82,16 @@ jobs:
 
       - name: Gerar Short
         run: |
-          bun postar-no-R43/scripts/mpt_generate.js \
-            --subject "$TEMA" --voice pt-BR-AntonioNeural --clip-duration 3 \
-            --mpt-home "$MPT_HOME" > gen.json
+          for tentativa in 1 2 3; do
+            echo "[mpt] tentativa $tentativa/3"
+            if bun postar-no-R43/scripts/mpt_generate.js \
+              --subject "$TEMA" --voice pt-BR-AntonioNeural --clip-duration 3 \
+              --mpt-home "$MPT_HOME" --timeout 2400 > gen.json; then
+              break
+            fi
+            if [ "$tentativa" -eq 3 ]; then exit 1; fi
+            sleep 15
+          done
           echo "MP4=$(bun -p 'JSON.parse(require("fs").readFileSync("gen.json","utf-8")).files[0]')" >> "$GITHUB_ENV"
 
       - name: Gerar metadados
@@ -92,6 +99,20 @@ jobs:
 
       - name: Publicar no YouTube
         run: bun postar-no-R43/scripts/yt_upload.js --file "$MP4" --meta-json meta.json --privacy public > up.json && cat up.json
+
+      - name: Persistir token renovado
+        if: success()
+        env:
+          GH_TOKEN: ${{ secrets.GH_ADMIN_TOKEN }}
+          SECRET_NAME: YOUTUBE_TOKEN
+          TOKEN_FILE: postar-no-R43/credentials/token.json
+        run: |
+          if [ -z "$GH_TOKEN" ]; then
+            echo "GH_ADMIN_TOKEN ausente; token renovado no runner nao persistido."
+            exit 0
+          fi
+          gh secret set "$SECRET_NAME" --repo "${{ github.repository }}" < "$TOKEN_FILE"
+          echo "Token persistido em $SECRET_NAME"
 
       - name: Registrar tema publicado
         run: bun postar-no-R43/scripts/escolher_tema.js --registrar "$TEMA"
