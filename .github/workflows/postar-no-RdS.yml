@@ -42,7 +42,8 @@ jobs:
 
       - name: Credenciais do YouTube
         env:
-          YOUTUBE_CLIENT_SECRET: ${{ secrets.YOUTUBE_CLIENT_SECRET_RDS }}
+          # Mesmo projeto/OAuth client do canal geral; só o token muda de canal.
+          YOUTUBE_CLIENT_SECRET: ${{ secrets.YOUTUBE_CLIENT_SECRET }}
           YOUTUBE_TOKEN: ${{ secrets.YOUTUBE_TOKEN_RDS }}
         run: |
           mkdir -p postar-no-RdS/credentials
