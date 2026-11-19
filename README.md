@@ -6,6 +6,7 @@ Automações pessoais rodando em GitHub Actions.
 |---|---|
 | `postar-no-blog` | `.github/workflows/postar-no-blog.yml` (código em `postar-no-blog/`) |
 | `postar-no-shorts` | `.github/workflows/postar-no-shorts.yml` (4x/dia, código em `postar-no-shorts/`) |
+| `postar-no-RdS` | `.github/workflows/postar-no-RdS.yml` (2x/dia, código em `postar-no-RdS/`) |
 
 ## postar-no-blog
 
@@ -21,3 +22,9 @@ bun postar-no-blog/scripts/post_news.js --email "$BLOG_EMAIL"
 ```
 
 O estado de dedupe (`state/`) fica em `actions/cache`.
+
+## postar-no-RdS
+
+Shorts sobre curiosidades pouco comentadas da Bíblia, personagens e contexto bíblico. Pasta própria: `postar-no-RdS/`, com scripts, estado (`postar-no-RdS/state/`) e credenciais (`postar-no-RdS/credentials/`) independentes. Roda 2x/dia (00, 12 BRT) para somar 6 uploads/dia com o canal geral.
+
+Workflow: `.github/workflows/postar-no-RdS.yml`. Reaproveita o secret `YOUTUBE_CLIENT_SECRET` do canal geral (mesmo projeto/OAuth client); só precisa de um secret novo: `YOUTUBE_TOKEN_RDS`, gerado com `bun scripts/autenticar.js` escolhendo o canal RdS no consentimento. `LLM_API_KEY`, `PEXELS_API_KEY`, `LLM_BASE_URL` e `LLM_MODEL` são compartilhados.
