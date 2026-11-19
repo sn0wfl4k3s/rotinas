@@ -1,5 +1,5 @@
 {
-  "name": "postar-no-shorts",
+  "name": "postar-no-R43",
   "version": "1.0.0",
   "description": "Pipeline: assunto -> MoneyPrinterTurbo -> YouTube Short",
   "type": "module",
