@@ -1,5 +1,5 @@
 {
-  "name": "posta-no-RdS",
+  "name": "postar-no-RdS",
   "version": "1.0.0",
   "description": "Pipeline: tema bíblico -> MoneyPrinterTurbo -> YouTube Short (canal RdS)",
   "type": "module",

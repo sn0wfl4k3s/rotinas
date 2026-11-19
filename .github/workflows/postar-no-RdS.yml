@@ -1,4 +1,4 @@
-name: posta-no-RdS
+name: postar-no-RdS
 
 on:
   schedule:
@@ -11,7 +11,7 @@ permissions:
   issues: write
 
 concurrency:
-  group: posta-no-RdS
+  group: postar-no-RdS
   cancel-in-progress: false
 
 jobs:
@@ -38,27 +38,27 @@ jobs:
           bun-version: "1.3.14"
 
       - run: bun install --frozen-lockfile
-        working-directory: posta-no-RdS
+        working-directory: postar-no-RdS
 
       - name: Credenciais do YouTube
         env:
           YOUTUBE_CLIENT_SECRET: ${{ secrets.YOUTUBE_CLIENT_SECRET_RDS }}
           YOUTUBE_TOKEN: ${{ secrets.YOUTUBE_TOKEN_RDS }}
         run: |
-          mkdir -p posta-no-RdS/credentials
-          printf '%s' "$YOUTUBE_CLIENT_SECRET" > posta-no-RdS/credentials/client_secret.json
-          printf '%s' "$YOUTUBE_TOKEN" > posta-no-RdS/credentials/token.json
+          mkdir -p postar-no-RdS/credentials
+          printf '%s' "$YOUTUBE_CLIENT_SECRET" > postar-no-RdS/credentials/client_secret.json
+          printf '%s' "$YOUTUBE_TOKEN" > postar-no-RdS/credentials/token.json
 
       - name: Restaurar histórico de temas
         uses: actions/cache@v4
         with:
-          path: posta-no-RdS/state/
+          path: postar-no-RdS/state/
           key: youtube-state-rds-${{ github.run_id }}
           restore-keys: |
             youtube-state-rds-
 
       - name: Configurar MoneyPrinterTurbo
-        run: bun posta-no-RdS/scripts/mpt_config.js
+        run: bun postar-no-RdS/scripts/mpt_config.js
 
       - name: Subir MoneyPrinterTurbo
         working-directory: MoneyPrinterTurbo
@@ -75,25 +75,25 @@ jobs:
 
       - name: Escolher tema
         run: |
-          bun posta-no-RdS/scripts/escolher_tema.js > tema.txt
+          bun postar-no-RdS/scripts/escolher_tema.js > tema.txt
           echo "TEMA=$(cat tema.txt)" >> "$GITHUB_ENV"
           cat tema.txt
 
       - name: Gerar Short
         run: |
-          bun posta-no-RdS/scripts/mpt_generate.js \
+          bun postar-no-RdS/scripts/mpt_generate.js \
             --subject "$TEMA" --voice pt-BR-AntonioNeural --clip-duration 3 \
             --mpt-home "$MPT_HOME" > gen.json
           echo "MP4=$(bun -p 'JSON.parse(require("fs").readFileSync("gen.json","utf-8")).files[0]')" >> "$GITHUB_ENV"
 
       - name: Gerar metadados
-        run: bun posta-no-RdS/scripts/gen_metadata.js --subject "$TEMA" > meta.json
+        run: bun postar-no-RdS/scripts/gen_metadata.js --subject "$TEMA" > meta.json
 
       - name: Publicar no YouTube
-        run: bun posta-no-RdS/scripts/yt_upload.js --file "$MP4" --meta-json meta.json --privacy public --category 27 > up.json && cat up.json
+        run: bun postar-no-RdS/scripts/yt_upload.js --file "$MP4" --meta-json meta.json --privacy public --category 27 > up.json && cat up.json
 
       - name: Registrar tema publicado
-        run: bun posta-no-RdS/scripts/escolher_tema.js --registrar "$TEMA"
+        run: bun postar-no-RdS/scripts/escolher_tema.js --registrar "$TEMA"
 
       - name: Diagnóstico do MoneyPrinterTurbo
         if: failure()
@@ -115,7 +115,7 @@ jobs:
           GH_TOKEN: ${{ github.token }}
           RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
         run: |
-          TITULO="Falha na rotina posta-no-RdS"
+          TITULO="Falha na rotina postar-no-RdS"
           EXISTENTE=$(gh issue list --repo "${{ github.repository }}" --state open \
             --search "\"$TITULO\" in:title" --json number --jq '.[0].number // empty')
           if [ -n "$EXISTENTE" ]; then

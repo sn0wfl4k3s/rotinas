@@ -3,7 +3,7 @@
   "configVersion": 1,
   "workspaces": {
     "": {
-      "name": "posta-no-RdS",
+      "name": "postar-no-RdS",
       "dependencies": {
         "@google-cloud/local-auth": "^3.0.1",
         "googleapis": "^144.0.0",
