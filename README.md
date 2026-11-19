@@ -10,7 +10,7 @@ Automações pessoais rodando em GitHub Actions.
 
 Opcional: secret `GH_ADMIN_TOKEN` (PAT com escopo `repo`) permite aos workflows regravar `YOUTUBE_TOKEN`/`YOUTUBE_TOKEN_RDS` quando o OAuth renova o token. Sem ele, o upload funciona, mas a renovação não volta para o GitHub.
 
-Quota: R43 (4x) + RdS (4x) = 8 uploads/dia. Projeto GCP/OAuth compartilhado tem ~6/dia; use projeto/OAuth separado para RdS ou reduza a frequência.
+Quota: R43 (4x) + RdS (4x) = 8 uploads/dia. Projeto GCP/OAuth compartilhado tem ~6/dia; use projeto/OAuth separado para RdS ou reduza a frequência. Para separar: criar novo projeto GCP, ativar YouTube Data API v3, criar OAuth client Desktop, gerar token com `postar-no-RdS/scripts/autenticar.js` escolhendo Refúgio do Senhor e gravar `YOUTUBE_CLIENT_SECRET_RDS` + `YOUTUBE_TOKEN_RDS`. O workflow prefere `YOUTUBE_CLIENT_SECRET_RDS` quando existe; sem ele usa o compartilhado e avisa no log.
 
 ## postar-no-R43
 
