@@ -9,6 +9,7 @@ import {
 import { montarMetadados } from "../scripts/gen_metadata.js";
 import { montarConfig } from "../scripts/mpt_config.js";
 import { chamarLLM } from "../scripts/llm.js";
+import { conferirCanal } from "../scripts/verificar_token.js";
 
 test("normalizar ignora caixa, acento e espaços extras", () => {
   assert.equal(normalizar("  O Sangue  do Polvo é AZUL "), "o sangue do polvo e azul");
@@ -118,4 +119,18 @@ test("llm: sem chave falha antes da rede", async () => {
   } finally {
     process.env = antes;
   }
+});
+
+test("token: confere canal esperado", () => {
+  const canais = [
+    { id: "UC1", snippet: { title: "Refúgio 43" } },
+    { id: "UC2", snippet: { title: "Refúgio do Senhor" } },
+  ];
+  assert.equal(conferirCanal(canais, "Refúgio do Senhor").id, "UC2");
+  assert.equal(conferirCanal(canais, "Inexistente"), null);
+});
+
+test("token: comparacao tolera caixa e acento", () => {
+  const canais = [{ id: "UC2", snippet: { title: "REFUGIO DO SENHOR" } }];
+  assert.equal(conferirCanal(canais, "Refúgio do Senhor").id, "UC2");
 });

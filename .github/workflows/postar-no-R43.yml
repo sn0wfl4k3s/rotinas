@@ -49,6 +49,12 @@ jobs:
           printf '%s' "$YOUTUBE_CLIENT_SECRET" > postar-no-R43/credentials/client_secret.json
           printf '%s' "$YOUTUBE_TOKEN" > postar-no-R43/credentials/token.json
 
+      - name: Verificar token e canal
+        env:
+          CANAL_ESPERADO: Refúgio 43
+          YOUTUBE_CREDENTIALS_DIR: ${{ github.workspace }}/postar-no-R43/credentials
+        run: bun postar-no-R43/scripts/verificar_token.js
+
       # Prefixo próprio: restore por prefixo não pode pegar o cache da RdS.
       - name: Restaurar histórico de temas
         uses: actions/cache@v4
