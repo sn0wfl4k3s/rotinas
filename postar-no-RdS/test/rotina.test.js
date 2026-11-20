@@ -87,19 +87,24 @@ test("montarConfig falha se o exemplo mudou e a chave sumiu", () => {
   assert.throws(() => montarConfig('llm_provider = "x"', { llmKey: "K", pexelsKey: "P" }));
 });
 
-test("tema: prompt é bíblico, reverente e inclui histórico", () => {
+test("tema: prompt foca personagens, locais e eventos bíblicos", () => {
   const prompt = montarPrompt(["Tema antigo"]);
-  assert.match(prompt, /Bíblia/);
+  assert.match(prompt, /personagem bíblico/);
+  assert.match(prompt, /local bíblico/);
+  assert.match(prompt, /evento bíblico/);
+  assert.match(prompt, /Evite temas soltos de linguística/);
   assert.match(prompt, /reverente/);
   assert.match(prompt, /- Tema antigo/);
+  assert.doesNotMatch(prompt, /O que o nome Isaque significa em hebraico/);
   assert.doesNotMatch(prompt, /sangue do polvo/);
 });
 
-test("metadados: prompt é cristão e proíbe sensacionalismo", () => {
+test("metadados: prompt pede gancho para quem está passando", () => {
   const prompt = montarPromptMeta("Isaque", "Roteiro");
   assert.match(prompt, /canal cristão/);
   assert.match(prompt, /Tema: Isaque/);
   assert.match(prompt, /Roteiro: Roteiro/);
+  assert.match(prompt, /gancho que prenda quem está passando/);
   assert.match(prompt, /revelação secreta/);
 });
 
