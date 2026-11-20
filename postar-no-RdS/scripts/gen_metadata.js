@@ -27,7 +27,7 @@ Responda APENAS com um JSON válido, sem markdown, no formato:
 {"title": "...", "description": "...", "tags": ["...", "..."]}
 
 Regras:
-- title: curto, reverente e direto, no máximo 40 caracteres antes de #Shorts.
+- title: máximo 40 caracteres antes de #Shorts; comece com gancho que prenda quem está passando (pergunta, detalhe visual ou contraste), ligado ao personagem, lugar ou evento do tema; reverente, sem promessa falsa.
 - description: 2 a 4 linhas, com gancho ligado ao texto bíblico e referência (ex.: "Gênesis 21:6") quando couber, terminando com 3 a 5 hashtags, como #Bíblia #Cristianismo.
 - tags: 8 a 12 palavras-chave, sem #.
 - Proibido termos sensacionalistas: "proibido", "oculto", "ninguém conta", "chocante", "revelação secreta".`;
