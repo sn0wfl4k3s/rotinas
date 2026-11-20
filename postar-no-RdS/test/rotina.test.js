@@ -98,7 +98,7 @@ test("tema: prompt foca personagens, locais e eventos bíblicos", () => {
   assert.doesNotMatch(prompt, /sangue do polvo/);
 });
 
-test("metadados: prompt pede gancho para quem esta passando", () => {
+test("metadados: prompt pede gancho para quem está passando", () => {
   const prompt = montarPromptMeta("Isaque", "Roteiro");
   assert.match(prompt, /canal cristão/);
   assert.match(prompt, /Tema: Isaque/);

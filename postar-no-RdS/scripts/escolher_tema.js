@@ -59,7 +59,7 @@ export function montarPrompt(historico) {
   return `Você escolhe um assunto para um YouTube Short em português do Brasil, para um canal cristão.
 Escolha UMA curiosidade real, verificável e pouco comentada com foco em UM destes assuntos:
 - personagem bíblico (ex.: Davi, Daniel, Rute, Paulo, Isaque);
-- local bíblico (ex.: Jerusalém, Betelehem, rio Jordão, monte Carmelo);
+- local bíblico (ex.: Jerusalém, Belém, rio Jordão, monte Carmelo);
 - evento bíblico (ex.: travessia do Mar Vermelho, queda de Jericó, Pentecostes).
 A curiosidade precisa ter relação direta com o personagem, lugar ou evento escolhido.
 Evite temas soltos de linguística ou teologia abstrata, como "o significado de X em hebraico", salvo se o significado explicar um detalhe concreto daquela história.
@@ -68,7 +68,7 @@ Não repita nenhum destes temas já publicados:
 ${evitar}
 
 Responda APENAS com JSON válido, sem markdown: {"tema": "..."}
-O tema é um assunto curto, de até 80 caracteres, com nome de personagem, lugar ou evento quando possível, sem quebra de linha. Ex.: "Por que Davi escolheu aquele vale?"`;
+O tema é um assunto curto, de até 80 caracteres, com nome de personagem, lugar ou evento quando possível, sem quebra de linha. Ex.: "Por que Davi levou cinco pedras?"`;
 }
 
 async function pedirTema(historico) {
