@@ -92,6 +92,7 @@ test("tema: prompt foca personagens, locais e eventos bíblicos", () => {
   assert.match(prompt, /personagem bíblico/);
   assert.match(prompt, /local bíblico/);
   assert.match(prompt, /evento bíblico/);
+  assert.match(prompt, /Evite temas soltos de linguística/);
   assert.match(prompt, /reverente/);
   assert.match(prompt, /- Tema antigo/);
   assert.doesNotMatch(prompt, /O que o nome Isaque significa em hebraico/);

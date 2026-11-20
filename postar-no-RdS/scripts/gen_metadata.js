@@ -4,7 +4,7 @@
  * Lê LLM_API_KEY, LLM_BASE_URL e LLM_MODEL do ambiente.
  *
  * Saída (stdout): JSON {title, description, tags:[...]}.
- * Ex.: node gen_metadata.js --subject "O que o nome Isaque significa em hebraico"
+ * Ex.: node gen_metadata.js --subject "Por que Davi levou cinco pedras?"
  */
 import { parseArgs } from "node:util";
 import { chamarLLM } from "./llm.js";
