@@ -17,6 +17,7 @@ export function montarConfig(exemplo, { llmKey, llmModel, pexelsKey }) {
     gemini_model_name: JSON.stringify(llmModel || "gemini-3.1-flash-lite"),
     subtitle_position: '"custom"',
     custom_position: 80.0,
+    font_size: 44,
     pexels_api_keys: JSON.stringify([pexelsKey]),
   };
   let texto = exemplo;
