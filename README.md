@@ -12,6 +12,3 @@ Opcional: secret `GH_ADMIN_TOKEN` (PAT com escopo `repo`) permite aos workflows 
 
 Quota: R43 (4x) + RdS (4x) = 8 uploads/dia. Projeto GCP/OAuth compartilhado tem ~6/dia; use projeto/OAuth separado para RdS ou reduza a frequência. Para separar: criar novo projeto GCP, ativar YouTube Data API v3, criar OAuth client Desktop, gerar token com `postar-no-RdS/scripts/autenticar.js` escolhendo Refúgio do Senhor e gravar `YOUTUBE_CLIENT_SECRET_RDS` + `YOUTUBE_TOKEN_RDS`. O workflow prefere `YOUTUBE_CLIENT_SECRET_RDS` quando existe; sem ele usa o compartilhado e avisa no log.
 
-## postar-no-R43
-
-Shorts de curiosidades gerais para o canal Refúgio 43. Pasta `postar-no-R43/`, estado em `postar-no-R43/state/`, credenciais em `postar-no-R43/credentials/`. 4x/dia (21, 03, 09, 15 BRT). Cache do Actions: `youtube-state-r43-`. Secrets `YOUTUBE_CLIENT_SECRET` e `YOUTUBE_TOKEN` permanecem com os nomes antigos.
