@@ -45,12 +45,18 @@ export async function chamarLLM(conteudo, {
         await sleep(esperaDaTentativa(i));
         continue;
       }
-      if (!resp.ok) throw new Error(`LLM HTTP ${resp.status}: ${(await resp.text()).slice(0, 300)}`);
+      if (!resp.ok) {
+        // 4xx e erro de configuracao: repetir nao ajuda e so atrasa o aviso.
+        const erro = new Error(`LLM HTTP ${resp.status}: ${(await resp.text()).slice(0, 300)}`);
+        erro.transitorio = false;
+        throw erro;
+      }
       const dados = await resp.json();
       return dados.choices[0].message.content;
     } catch (e) {
       ultimoErro = e;
-      if (i === tentativas) throw e;
+      // Resposta invalida tambem nao melhora com retry.
+      if (e?.transitorio === false || e instanceof SyntaxError || i === tentativas) throw e;
       await sleep(esperaDaTentativa(i));
     }
   }

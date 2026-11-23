@@ -133,6 +133,36 @@ test("llm: 503 persistente usa 6 tentativas com backoff crescente", async () => 
   });
 });
 
+test("llm: 4xx falha rapido sem retry", async () => {
+  await comLLM(async () => {
+    let chamadas = 0;
+    const esperas = [];
+    await assert.rejects(() => chamarLLM("oi", {
+      fetchImpl: async () => {
+        chamadas += 1;
+        return new Response("bad request", { status: 400 });
+      },
+      sleep: async (ms) => { esperas.push(ms); },
+    }), /LLM HTTP 400/);
+    assert.equal(chamadas, 1);
+    assert.equal(esperas.length, 0);
+  });
+});
+
+test("llm: JSON invalido falha rapido sem retry", async () => {
+  await comLLM(async () => {
+    let chamadas = 0;
+    await assert.rejects(() => chamarLLM("oi", {
+      fetchImpl: async () => {
+        chamadas += 1;
+        return new Response("nao-e-json", { status: 200 });
+      },
+      sleep: async () => {},
+    }));
+    assert.equal(chamadas, 1);
+  });
+});
+
 test("llm: sem chave falha antes da rede", async () => {
   const antes = process.env;
   process.env = { ...antes };
