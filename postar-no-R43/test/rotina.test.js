@@ -112,6 +112,57 @@ test("llm: 503 tenta de novo e envia timeout", async () => {
   });
 });
 
+test("llm: 503 persistente usa 6 tentativas com backoff crescente", async () => {
+  await comLLM(async () => {
+    let chamadas = 0;
+    const esperas = [];
+    const conteudo = await chamarLLM("oi", {
+      fetchImpl: async () => {
+        chamadas += 1;
+        if (chamadas < 6) return new Response("ocupado", { status: 503 });
+        return new Response(JSON.stringify({ choices: [{ message: { content: "ok" } }] }), { status: 200 });
+      },
+      sleep: async (ms) => { esperas.push(ms); },
+    });
+    assert.equal(conteudo, "ok");
+    assert.equal(chamadas, 6);
+    assert.equal(esperas.length, 5);
+    assert.ok(esperas[0] >= 2_000 && esperas[0] < 3_000);
+    assert.ok(esperas[1] >= 4_000 && esperas[1] < 5_000);
+    assert.ok(esperas[4] >= 30_000 && esperas[4] < 31_000);
+  });
+});
+
+test("llm: 4xx falha rapido sem retry", async () => {
+  await comLLM(async () => {
+    let chamadas = 0;
+    const esperas = [];
+    await assert.rejects(() => chamarLLM("oi", {
+      fetchImpl: async () => {
+        chamadas += 1;
+        return new Response("bad request", { status: 400 });
+      },
+      sleep: async (ms) => { esperas.push(ms); },
+    }), /LLM HTTP 400/);
+    assert.equal(chamadas, 1);
+    assert.equal(esperas.length, 0);
+  });
+});
+
+test("llm: JSON invalido falha rapido sem retry", async () => {
+  await comLLM(async () => {
+    let chamadas = 0;
+    await assert.rejects(() => chamarLLM("oi", {
+      fetchImpl: async () => {
+        chamadas += 1;
+        return new Response("nao-e-json", { status: 200 });
+      },
+      sleep: async () => {},
+    }));
+    assert.equal(chamadas, 1);
+  });
+});
+
 test("llm: sem chave falha antes da rede", async () => {
   const antes = process.env;
   process.env = { ...antes };
